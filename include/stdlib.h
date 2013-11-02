@@ -3,5 +3,7 @@
 
 int main(int argc, char* argv[], char* envp[]);
 void exit(int status);
+void memset(void *init, char val, int sz);
+
 
 #endif

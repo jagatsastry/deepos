@@ -1,8 +1,16 @@
 #include <defs.h>
+#include <stdio.h>
+#include<utilities.h>
+#include<kernel.h>
+#include<mem.h>
 #include <sys/gdt.h>
+
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
+    int x = 100;
+    printf("Rand stack: %x", &x);
+    printf("Physbase: %x physfree: %x\n", physbase, physfree);
 	struct smap_t {
 		uint64_t base, length;
 		uint32_t type;
@@ -13,9 +21,11 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 			printf("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
-	// kernel starts here
+    init_phys_mem(modulep, physbase, physfree);
+	init_kernel(modulep, physbase, physfree);
 	while(1);
 }
+
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -34,6 +44,7 @@ void boot(void)
 	);
 	reload_gdt();
 	setup_tss();
+//    printf("Kernmem: %x phybase: %x\n", &kernmem, &physbase);
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
