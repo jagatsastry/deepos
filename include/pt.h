@@ -11,6 +11,7 @@
 #include <defs.h>
 #include <region.h>
 #include <stdio.h>
+#include <addr.h>
 
 #define CPU_READ_REG64(_reg_) \
     static inline uint64_t cpu_read_ ## _reg_() { \
@@ -67,6 +68,8 @@ extern struct page_table_mem kernel_page_tables;
 
 /*** maximum number of pages supported ***/
 #define PAGE_MAX 4096
+
+#define BYTES_PER_PAGE 4096
 
 /*** maximum amount of physical memory supported. ( 8 Gigabytes using above defaults ) ***/
 #define MAX_PHY_MEM (PAGE_MAX * PAGE_SIZE)

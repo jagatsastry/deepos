@@ -7,7 +7,7 @@
 #include <addr.h>
 
 
-void start(uint32_t* modulep, void* physbase, void* physfree)
+void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
 {
     int x = 100;
     printf("Rand stack: %x", &x);
@@ -22,7 +22,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 			printf("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
-	init_kernel(modulep, physbase, physfree);
+	init_kernel(modulep, kernmem, physbase, physfree);
 	while(1);
 }
 
@@ -47,6 +47,7 @@ void boot(void)
 //    printf("Kernmem: %x phybase: %x\n", &kernmem, &physbase);
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
+    &kernmem,
 		&physbase,
 		(void*)(uint64_t)loader_stack[4]
 	);
