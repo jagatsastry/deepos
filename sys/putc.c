@@ -1,10 +1,11 @@
+#include <addr.h>
 int x_cord = 0, y_cord = 0;
 
 void scroll();
 
 void putc( char c )
 {
-   unsigned short *testMPtr = (unsigned short *)0xB8000;
+   unsigned short *testMPtr = (unsigned short *)vga_virt_addr;
    unsigned short *scrnLocPtr ;
    int attrb = 0x0F;
    // if there is a backspace handle it by moving the x_cord back

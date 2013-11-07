@@ -4,6 +4,7 @@
 #include<kernel.h>
 #include<mem.h>
 #include <sys/gdt.h>
+#include <addr.h>
 
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
@@ -21,7 +22,6 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 			printf("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
-    init_phys_mem(modulep, physbase, physfree);
 	init_kernel(modulep, physbase, physfree);
 	while(1);
 }
@@ -51,7 +51,7 @@ void boot(void)
 		(void*)(uint64_t)loader_stack[4]
 	);
 	for(
-		temp1 = "!!!!! start() returned !!!!!", temp2 = (char*)0xb8000;
+		temp1 = "!!!!! start() returned !!!!!", temp2 = (char*)vga_virt_addr;
 		*temp1;
 		temp1 += 1, temp2 += 2
 	) *temp2 = *temp1;
