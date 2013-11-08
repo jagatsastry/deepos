@@ -2,7 +2,7 @@
 # include <stdarg.h>
 
 void puts( const char *str, int *num, va_list argp ); 
-char* convertToHex( long int number );
+char* convertToHex(unsigned long int number );
 
 int printf(const char *str, ...){
      int num = 0;
@@ -97,7 +97,7 @@ void puts( const char *str, int *num, va_list argp )
      }
 }
 
-char* convertToHex( long int number )
+char* convertToHex(unsigned long int number )
 {
 	static char buffForHex[ 64 ]; char tempChar, charToInsert= '\0';
 	int curStringLoc = 2, hexRemainder, loc = 2;

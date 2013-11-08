@@ -37,7 +37,7 @@ void init_phys_mem(uint32_t* modulep, void* kernmem, void* physbase, void* physf
     printf("Initializing physical memory\n");
     phy_bitmap = (uint64_t*)physfree;
     //physfree += PHY_BITMAP_SIZE;
-    
+    printf(" %x", (uint64_t)kernmem);
     kern_physfree = (uint64_t)physfree;
     kern_physbase = (uint64_t)physbase;
     kernmem_offset = (uint64_t)kernmem;

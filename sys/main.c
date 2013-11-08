@@ -12,6 +12,7 @@ void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
     int x = 100;
     printf("Rand stack: %x", &x);
     printf("Physbase: %x physfree: %x\n", physbase, physfree);
+    printf("kernmem %x\n", kernmem);
 	struct smap_t {
 		uint64_t base, length;
 		uint32_t type;
@@ -44,7 +45,6 @@ void boot(void)
 	);
 	reload_gdt();
 	setup_tss();
-//    printf("Kernmem: %x phybase: %x\n", &kernmem, &physbase);
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
     &kernmem,
