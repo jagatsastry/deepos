@@ -32,21 +32,18 @@ uint64_t align_next_page(uint64_t ptr) {
     return (ptr/BYTES_PER_PAGE) << 12; //HARDCODED;
 }
 
+extern void* alloc_above_kern();
+
 void init_phys_mem(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
 
-    printf("Initializing physical memory\n");
-    phy_bitmap = (uint64_t*)physfree;
-    //physfree += PHY_BITMAP_SIZE;
-    printf(" %x", (uint64_t)kernmem);
     kern_physfree = (uint64_t)physfree;
     kern_physbase = (uint64_t)physbase;
     kernmem_offset = (uint64_t)kernmem;
 
-    printf("Before %x %x \n", (uint64_t)kern_physbase, (uint64_t)kern_physfree);
-
-    printf("bs %d %x\n", PHY_BITMAP_SIZE, PHY_BITMAP_SIZE);
-    kern_physfree += (PHY_BITMAP_SIZE * 8ULL);
-    printf("After %x %x \n", (uint64_t)kern_physbase, (uint64_t)kern_physfree);
+    printf("Initializing physical memory\n");
+    phy_bitmap = (uint64_t*)alloc_above_kern();
+    //physfree += PHY_BITMAP_SIZE;
+    //printf(" %x", (uint64_t)kernmem);
 
     int i = 0;
     //Mark all as occupied
