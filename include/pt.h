@@ -33,7 +33,6 @@ CPU_READ_REG64(cr3) /* static inline uint64_t cpu_read_cr3() */
 CPU_WRITE_REG64(cr0) /* static inline void cpu_write_cr0(uint64_t) */
 CPU_WRITE_REG64(cr1) /* static inline void cpu_write_cr1(uint64_t) */
 CPU_WRITE_REG64(cr2) /* static inline void cpu_write_cr2(uint64_t) */
-CPU_WRITE_REG64(cr3) /* static inline void cpu_write_cr3(uint64_t) */
 
 
 

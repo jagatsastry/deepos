@@ -32,7 +32,7 @@ uint64_t align_next_page(uint64_t ptr) {
     return (ptr/BYTES_PER_PAGE) << 12; //HARDCODED;
 }
 
-extern void* alloc_above_kern();
+extern void* alloc_virt_above_kern();
 
 void init_phys_mem(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
 
@@ -41,7 +41,7 @@ void init_phys_mem(uint32_t* modulep, void* kernmem, void* physbase, void* physf
     kernmem_offset = (uint64_t)kernmem;
 
     printf("Initializing physical memory\n");
-    phy_bitmap = (uint64_t*)alloc_above_kern();
+    phy_bitmap = (uint64_t*)alloc_virt_above_kern();
     //physfree += PHY_BITMAP_SIZE;
     //printf(" %x", (uint64_t)kernmem);
 

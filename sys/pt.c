@@ -40,8 +40,16 @@ uint64_t phys_to_virt_above_kernmem(uint64_t phys_addr) {
 }
 
 /*Alocate a page and return its address*/
-void* alloc_above_kern() {
-  void* addr = (void*)ALIGN_UP(phys_to_virt_above_kernmem(kern_physfree));
+void* alloc_virt_above_kern() {
+  void* addr = (void*)ALIGN_UP(kernmem_offset + kern_physfree);
+  set_page_used_for_addr((uint64_t)addr - kernmem_offset);
+  kern_physfree += BYTES_PER_PAGE;
+  return addr;
+}
+
+/*Alocate a page and return its address*/
+void* alloc_phys_above_kern() {
+  void* addr = (void*)ALIGN_UP(kern_physfree);
   set_page_used_for_addr((uint64_t)addr);
   kern_physfree += BYTES_PER_PAGE;
   return addr;
@@ -53,33 +61,38 @@ uint64_t virt_to_phys_above_kernmem(uint64_t virt_addr) {
 }
 
 void setPds(uint64_t addr, uint64_t *pt) {
-  temp_pml4e[0x1ff & (addr >> 39)] = virt_to_phys_above_kernmem((uint64_t)temp_pdpe) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
-  temp_pdpe[0x1ff & (addr >> 30)] = virt_to_phys_above_kernmem((uint64_t)temp_pde) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG ;
-  temp_pde[0x1ff & (addr >> 21)] = virt_to_phys_above_kernmem((uint64_t)pt) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
+  temp_pml4e[0x1ff & (addr >> 39)] = ((uint64_t)temp_pdpe) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
+  temp_pdpe[0x1ff & (addr >> 30)] = ((uint64_t)temp_pde) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG ;
+  temp_pde[0x1ff & (addr >> 21)] = ((uint64_t)pt) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
 }
 
 #define MASK (~((1ull<<12) - 1))
 
 uint64_t get_phy_addr(uint64_t addr, uint64_t* pml4e) {
-  uint64_t* pdpe = (uint64_t*)phys_to_virt_above_kernmem((pml4e[0x1ff & (addr >> 39)] & MASK));
-  uint64_t* pde = (uint64_t*)phys_to_virt_above_kernmem((pdpe[0x1ff & (addr >> 30)] & MASK));
-  uint64_t* pt = (uint64_t*)phys_to_virt_above_kernmem((pde[0x1ff & (addr >> 21)] & MASK));
+  uint64_t* pdpe = (uint64_t*)((pml4e[0x1ff & (addr >> 39)] & MASK));
+  uint64_t* pde = (uint64_t*)((pdpe[0x1ff & (addr >> 30)] & MASK));
+  uint64_t* pt = (uint64_t*)((pde[0x1ff & (addr >> 21)] & MASK));
   
   uint64_t phy_addr = pt[0x1ff & (addr >> 12)];
 
   return phy_addr & MASK;
 }
 
+static inline void cpu_write_cr3(uint64_t val) { 
+  __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (val) ); 
+}
+
+
 void pt_initialise(uint32_t* modulep) {
   
   printf("%d", sizeof (unsigned long int));
   printf("hex 0xffffffff80000000: %x\n", 0xffffffff80000000ull);
 
-  temp_pml4e = (uint64_t*)(alloc_above_kern());
-  temp_pdpe = (uint64_t*)(alloc_above_kern());
-  temp_pde = (uint64_t*)(alloc_above_kern());
-  temp_kern_pt = (uint64_t*)(alloc_above_kern());
-  temp_vga_pt = (uint64_t*)(alloc_above_kern());
+  temp_pml4e = (uint64_t*)(alloc_phys_above_kern());
+  temp_pdpe = (uint64_t*)(alloc_phys_above_kern());
+  temp_pde = (uint64_t*)(alloc_phys_above_kern());
+  temp_kern_pt = (uint64_t*)(alloc_phys_above_kern());
+  temp_vga_pt = (uint64_t*)(alloc_phys_above_kern());
 
   int a,b;
   printf("Addresses kernmem + physfree: %x pts: %x, %x, \n%x, %x, %x, %x, %x\n%x %x %x\n", 
@@ -100,16 +113,24 @@ void pt_initialise(uint32_t* modulep) {
 
   setPds(vga_virt_addr, temp_vga_pt);
 
-  temp_vga_pt[0x1FF & (vga_virt_addr >> 12)] = vga_phy_addr;
+  temp_vga_pt[0x1FF & (vga_virt_addr >> 12)] = vga_phy_addr | PT_PRESENT_FLAG | PT_WRITABLE_FLAG ;
 
   printf("From pt: Vga phys addr: %x, vga virt addr: %x\n", get_phy_addr(vga_virt_addr, temp_pml4e), vga_virt_addr);
   printf("Initializing page tables %d\n", ++dbg_index);
 
   //kern_physfree += (80*25*4*2); /*4 screens, 25 lines each of 80 chars. 2 bytes each (char + props)*/
 
-  cpu_write_cr3(virt_to_phys_above_kernmem((uint64_t)temp_pml4e));
+  cpu_write_cr3((uint64_t)temp_pml4e);
+    printf("\nIM BACK");
+  dbg_index++;
+  if (dbg_index != 2) 
+    goto fuck;
+  dbg_index++;
+  if (dbg_index != 3) 
+    goto fuck;
   while(1);
-  printf("\nIM BACK");
+  fuck:
+    printf("\nIM BACK");
 }
 
 
