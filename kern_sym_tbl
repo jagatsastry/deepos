@@ -1,0 +1,129 @@
+
+kernel:     file format elf64-x86-64
+
+SYMBOL TABLE:
+ffffffff802000f0 l    d  .text	0000000000000000 .text
+ffffffff802014bc l    d  .rodata	0000000000000000 .rodata
+ffffffff80201598 l    d  .eh_frame	0000000000000000 .eh_frame
+ffffffff80201cc0 l    d  .rodata.str1.1	0000000000000000 .rodata.str1.1
+ffffffff80201e20 l    d  .rodata.str1.8	0000000000000000 .rodata.str1.8
+ffffffff80202000 l    d  .got	0000000000000000 .got
+ffffffff80203000 l    d  .bss	0000000000000000 .bss
+ffffffff80205160 l    d  .data	0000000000000000 .data
+ffffffff8021bb20 l    d  .data.rel	0000000000000000 .data.rel
+0000000000000000 l    d  .debug_info	0000000000000000 .debug_info
+0000000000000000 l    d  .debug_abbrev	0000000000000000 .debug_abbrev
+0000000000000000 l    d  .debug_aranges	0000000000000000 .debug_aranges
+0000000000000000 l    d  .debug_macro	0000000000000000 .debug_macro
+0000000000000000 l    d  .debug_line	0000000000000000 .debug_line
+0000000000000000 l    d  .debug_str	0000000000000000 .debug_str
+0000000000000000 l    d  .comment	0000000000000000 .comment
+0000000000000000 l    d  .debug_frame	0000000000000000 .debug_frame
+0000000000000000 l    d  .debug_loc	0000000000000000 .debug_loc
+0000000000000000 l    df *ABS*	0000000000000000 addr.c
+0000000000000000 l    df *ABS*	0000000000000000 gdt.c
+ffffffff8021bb20 l     O .data.rel	000000000000000a gdtr
+0000000000000000 l    df *ABS*	0000000000000000 idt.c
+0000000000000000 l    df *ABS*	0000000000000000 irq.c
+0000000000000000 l    df *ABS*	0000000000000000 isrs.c
+0000000000000000 l    df *ABS*	0000000000000000 itoa.c
+ffffffff80203000 l     O .bss	0000000000000021 buf.1004
+0000000000000000 l    df *ABS*	0000000000000000 kb.c
+ffffffff80203024 l     O .bss	0000000000000001 SHIFT_PRESSED.1069
+0000000000000000 l    df *ABS*	0000000000000000 kernel.c
+0000000000000000 l    df *ABS*	0000000000000000 main.c
+0000000000000000 l    df *ABS*	0000000000000000 mem.c
+ffffffff80203028 l     O .bss	0000000000000008 phy_bitmap
+0000000000000000 l    df *ABS*	0000000000000000 pic.c
+0000000000000000 l    df *ABS*	0000000000000000 printf.c
+ffffffff80203040 l     O .bss	0000000000000040 buffForHex.1059
+0000000000000000 l    df *ABS*	0000000000000000 pt.c
+0000000000000000 l    df *ABS*	0000000000000000 putc.c
+0000000000000000 l    df *ABS*	0000000000000000 stdlib.c
+0000000000000000 l    df *ABS*	0000000000000000 string.c
+0000000000000000 l    df *ABS*	0000000000000000 timer.c
+ffffffff8020308c l     O .bss	0000000000000004 timer_ticks.1067
+0000000000000000 l    df *ABS*	0000000000000000 utilities.c
+ffffffff80203090 l     O .bss	0000000000000003 temp.1033
+ffffffff80201422 l       .text	0000000000000000 .done
+ffffffff8020143b l       .text	0000000000000000 irq_common_stub_0
+ffffffff80201467 l       .text	0000000000000000 irq_common_stub_1
+ffffffff80201493 l       .text	0000000000000000 isr_common_stub
+ffffffff802020e0 l     O .got	0000000000000000 .hidden _GLOBAL_OFFSET_TABLE_
+ffffffff80205120 g     O .bss	0000000000000008 temp_pdpe
+ffffffff8020042c g     F .text	0000000000000064 init_kernel
+ffffffff8020010f g     F .text	0000000000000065 setup_tss
+ffffffff80200c3d g     F .text	0000000000000056 printf
+ffffffff80200d31 g     F .text	000000000000000e virt_to_phys_above_kernmem
+ffffffff80201410 g       .text	0000000000000000 _x86_64_asm_lgdt
+ffffffff8021bb20 g       .data	0000000000000000 _binary_tarfs_end
+ffffffff80205108 g     O .bss	0000000000000008 kern_physbase
+ffffffff802007f8 g     F .text	0000000000000014 mm_phy_free_page
+ffffffff802002ac g     F .text	0000000000000017 fault_handler
+ffffffff80205110 g     O .bss	0000000000000008 kern_physfree
+ffffffff802030e0 g     O .bss	000000000000000a idtp
+ffffffff802011d8 g     F .text	0000000000000057 lpad
+ffffffff80200609 g     F .text	0000000000000020 set_page_free
+ffffffff80200629 g     F .text	0000000000000012 set_page_used_for_addr
+ffffffff80201198 g     F .text	0000000000000040 timer_handler
+ffffffff802008ae g     F .text	000000000000005a init_pics
+ffffffff802009fc g     F .text	0000000000000241 puts
+ffffffff80201490 g       .text	0000000000000000 _isr0
+ffffffff80205180 g     O .data	0000000000000100 gdt
+ffffffff80200210 g     F .text	000000000000003c install_irqs
+0000000000016800 g       *ABS*	0000000000000000 _binary_tarfs_size
+ffffffff80201438 g       .text	0000000000000000 _irq0
+ffffffff802002c4 g     F .text	000000000000009d itoa
+ffffffff802008a4 g     F .text	0000000000000006 port_outb
+ffffffff8020056d g     F .text	000000000000007d boot
+ffffffff8020064d g     F .text	000000000000000a align_next_page
+ffffffff80203088 g     O .bss	0000000000000004 x_cord
+0000000000200000 g       *ABS*	0000000000000000 physbase
+ffffffff80205320 g       .data	0000000000000000 _binary_tarfs_start
+ffffffff80204100 g     O .bss	0000000000001000 stack
+ffffffff802000f0 g     F .text	000000000000001f reload_gdt
+ffffffff80200364 g     F .text	00000000000000c6 keyboard_handler
+ffffffff80200da0 g     F .text	0000000000000059 get_phy_addr
+ffffffff802001ae g     F .text	000000000000001a install_isrs
+ffffffff80203080 g     O .bss	0000000000000004 dbg_index
+ffffffff802030a0 g     O .bss	0000000000000038 tss
+ffffffff80205168 g     O .data	0000000000000008 vga_phy_addr
+ffffffff80205100 g     O .bss	0000000000000008 loader_stack
+ffffffff80200910 g     F .text	00000000000000ec convertToHex
+ffffffff80200174 g     F .text	000000000000003a install_isr
+ffffffff80200290 g     F .text	000000000000001a irq1_handler
+ffffffff80205280 g     O .data	000000000000000c shiftNums
+ffffffff802005ec g     F .text	000000000000001d set_page_used
+ffffffff80200df9 g     F .text	00000000000001fa pt_initialise
+ffffffff80200ca2 g     F .text	0000000000000051 alloc_virt_above_kern
+ffffffff802052a0 g     O .data	0000000000000080 kbdus
+ffffffff80205128 g     O .bss	0000000000000008 temp_pde
+ffffffff80200ff4 g     F .text	0000000000000054 scroll
+ffffffff80205130 g     O .bss	0000000000000008 temp_vga_pt
+ffffffff80200000 g       *ABS*	0000000000000000 kernmem
+ffffffff80201160 g     F .text	0000000000000016 memset
+ffffffff80205160 g     O .data	0000000000000008 vga_virt_addr
+ffffffff8020122f g     F .text	0000000000000049 print_key
+ffffffff80201048 g     F .text	0000000000000118 putc
+ffffffff80203100 g     O .bss	0000000000001000 idt
+ffffffff80205138 g     O .bss	0000000000000008 temp_kern_pt
+ffffffff802001c8 g     F .text	0000000000000045 idtStart
+ffffffff80200d3f g     F .text	0000000000000061 setPds
+ffffffff80201434 g       .text	0000000000000000 _idt_load
+ffffffff8020024c g     F .text	000000000000002a irq_handler
+ffffffff802008aa g     F .text	0000000000000004 port_inb
+ffffffff80205140 g     O .bss	0000000000000008 temp_pml4e
+ffffffff8020063b g     F .text	0000000000000012 set_page_free_for_addr
+ffffffff80201278 g     F .text	0000000000000198 print_time
+ffffffff80201464 g       .text	0000000000000000 _irq1
+ffffffff80200657 g     F .text	00000000000001a1 init_phys_mem
+ffffffff80200490 g     F .text	00000000000000dd start
+ffffffff80200cf3 g     F .text	000000000000003e alloc_phys_above_kern
+ffffffff80200276 g     F .text	000000000000001a irq0_handler
+ffffffff80201178 g     F .text	000000000000001d strlen
+ffffffff80205118 g     O .bss	0000000000000008 kernmem_offset
+ffffffff80203084 g     O .bss	0000000000000004 y_cord
+ffffffff8020080c g     F .text	0000000000000097 mm_phy_alloc_page
+ffffffff80200c94 g     F .text	000000000000000e phys_to_virt_above_kernmem
+
+
