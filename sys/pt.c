@@ -128,7 +128,7 @@ void pt_initialise(uint32_t* modulep) {
   dbg_index++;
   if (dbg_index != 3) 
     goto fuck;
-  while(1);
+  //while(1);
   fuck:
     printf("\nIM BACK");
 }
