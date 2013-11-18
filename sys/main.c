@@ -5,6 +5,7 @@
 #include<mem.h>
 #include <sys/gdt.h>
 #include <addr.h>
+#include <sys/tarfs.h>
 
 
 void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
@@ -23,6 +24,7 @@ void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
 			printf("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
+	printf("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	init_kernel(modulep, kernmem, physbase, physfree);
 	while(1);
 }
@@ -32,6 +34,7 @@ void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
 char stack[INITIAL_STACK_SIZE];
 uint32_t* loader_stack;
 extern char kernmem, physbase;
+struct tss_t tss;
 
 void boot(void)
 {
