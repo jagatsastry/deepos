@@ -25,6 +25,7 @@
       __asm__ __volatile__( "movq %0, %%" #_reg_ : /* no output */ : "r" (val) ); \
     }
 
+CPU_READ_REG64(rsp)
 CPU_READ_REG64(cr0) /* static inline uint64_t cpu_read_cr0() */
 CPU_READ_REG64(cr1) /* static inline uint64_t cpu_read_cr1() */
 CPU_READ_REG64(cr2) /* static inline uint64_t cpu_read_cr2() */

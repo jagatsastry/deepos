@@ -3,10 +3,17 @@
 
 #include <defs.h>
 
+/**
+Task-State Segment (TSS)—A segment that holds the processor state associated with a task.
+• TSS Selector—A segment selector that references the TSS descriptor located in the GDT.
+• Task Register—A register that holds the TSS selector and TSS descriptor for the current task
+SEE: Page 39 of amd manual
+*/
+//TODO:  tss isn't being set anywhere. Only the address is added.
 struct tss_t {
 	uint32_t reserved;
 	uint64_t rsp0;
-	uint32_t unused[11];
+	uint32_t unused[11]; //We don't use any field other than rsp0
 }__attribute__((packed));
 extern struct tss_t tss;
 

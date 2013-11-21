@@ -28,6 +28,10 @@ extern void set_page_used_for_addr(uint64_t ptr);
 
 
 int dbg_index = 0;
+typedef struct  {
+  uint64_t *pd;
+} page_directory_t;
+
 uint64_t 
   *temp_pml4e,
   *temp_pdpe,
@@ -61,9 +65,9 @@ uint64_t virt_to_phys_above_kernmem(uint64_t virt_addr) {
 }
 
 void setPds(uint64_t addr, uint64_t *pt) {
-  temp_pml4e[0x1ff & (addr >> 39)] = ((uint64_t)temp_pdpe) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
-  temp_pdpe[0x1ff & (addr >> 30)] = ((uint64_t)temp_pde) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG ;
-  temp_pde[0x1ff & (addr >> 21)] = ((uint64_t)pt) | PT_PRESENT_FLAG | PT_WRITABLE_FLAG;
+  temp_pml4e[0x1ff & (addr >> 39)] = ((uint64_t)temp_pdpe) | PT_PRESENT_FLAG | PT_USER_FLAG | PT_WRITABLE_FLAG;
+  temp_pdpe[0x1ff & (addr >> 30)] = ((uint64_t)temp_pde) | PT_PRESENT_FLAG | PT_USER_FLAG | PT_WRITABLE_FLAG ;
+  temp_pde[0x1ff & (addr >> 21)] = ((uint64_t)pt) | PT_PRESENT_FLAG | PT_USER_FLAG | PT_WRITABLE_FLAG;
 }
 
 #define MASK (~((1ull<<12) - 1))
@@ -107,13 +111,13 @@ void pt_initialise(uint32_t* modulep) {
   for (; kernStart <  kern_physfree + BYTES_PER_PAGE ; kernStart += BYTES_PER_PAGE) {
     uint64_t virt_addr = phys_to_virt_above_kernmem(kernStart);
     int idx = (0x1ff & (virt_addr >> 12)) ;
-    temp_kern_pt[idx] = (kernStart)  | PT_PRESENT_FLAG | PT_WRITABLE_FLAG ;
+    temp_kern_pt[idx] = (kernStart)  | PT_PRESENT_FLAG | PT_USER_FLAG | PT_WRITABLE_FLAG ;
   }
   
 
   setPds(vga_virt_addr, temp_vga_pt);
 
-  temp_vga_pt[0x1FF & (vga_virt_addr >> 12)] = vga_phy_addr | PT_PRESENT_FLAG | PT_WRITABLE_FLAG ;
+  temp_vga_pt[0x1FF & (vga_virt_addr >> 12)] = vga_phy_addr | PT_PRESENT_FLAG | PT_USER_FLAG | PT_WRITABLE_FLAG ;
 
   printf("From pt: Vga phys addr: %x, vga virt addr: %x\n", get_phy_addr(vga_virt_addr, temp_pml4e), vga_virt_addr);
   printf("Initializing page tables %d\n", ++dbg_index);

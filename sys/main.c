@@ -7,6 +7,7 @@
 #include <addr.h>
 #include <sys/tarfs.h>
 
+extern void enter_user_mode();
 
 void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
 {
@@ -26,6 +27,7 @@ void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
 	}
 	printf("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	init_kernel(modulep, kernmem, physbase, physfree);
+  enter_user_mode();
 	while(1);
 }
 
