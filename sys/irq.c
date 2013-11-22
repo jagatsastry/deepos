@@ -10,7 +10,7 @@ extern void _irq1();
 
 void install_irqs()
 {
-    printf("Install irqs\n");
+    //printf("Install irqs\n");
     install_isr(32, (uint64_t)_irq0);
     install_isr(33, (uint64_t)_irq1);
 }
