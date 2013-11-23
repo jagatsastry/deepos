@@ -19,7 +19,7 @@ void puts( const char *str, int *num, va_list argp )
 {
      char *stringizedNum;
      unsigned long int intNumber; 
-     long int numInt;
+     unsigned long int numInt;
      char *str1; 
      while( *str != '\0')
      {
