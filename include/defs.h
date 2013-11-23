@@ -16,5 +16,6 @@ typedef unsigned short __uint16_t;
 typedef __uint16_t uint16_t;
 typedef unsigned char uint08_t;
 typedef uint08_t uint8_t;
+typedef uint8_t BOOL;
 
 #endif

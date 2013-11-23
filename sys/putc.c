@@ -1,4 +1,8 @@
-#include <addr.h>
+#include<defs.h>
+
+extern uint64_t vga_phy_addr;
+extern volatile uint64_t vga_virt_addr;
+
 int x_cord = 0, y_cord = 0;
 
 void scroll();

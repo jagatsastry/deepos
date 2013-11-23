@@ -4,17 +4,20 @@
 #include<kernel.h>
 #include<mem.h>
 #include <sys/gdt.h>
-#include <addr.h>
 #include <sys/tarfs.h>
 
 extern void enter_user_mode();
+uint64_t vga_phy_addr;
+volatile uint64_t vga_virt_addr;
 
 void start(uint32_t* modulep, void* kernmem, void* physbase, void* physfree)
 {
+    vga_phy_addr = 0xB8000;
+    vga_virt_addr = vga_phy_addr;
     int x = 100;
     printf("Rand stack: %x", &x);
     printf("Physbase: %x physfree: %x\n", physbase, physfree);
-    printf("kernmem %x\n", kernmem);
+    printf("kernmem %x\n",  &kernmem);
 	struct smap_t {
 		uint64_t base, length;
 		uint32_t type;

@@ -8,6 +8,9 @@
 
 #define PHY_BITMAP_SIZE  (8ULL * 1024 * 1024 * 1024)/(BYTES_PER_PAGE * 64)
 
+extern uint64_t vga_phy_addr;
+extern volatile uint64_t vga_virt_addr;
+
 static uint64_t *phy_bitmap = NULL; //[MAX_RAM_SIZE/(BYTES_PER_PAGE * 64)];
 
 uint64_t kernmem_offset, kern_physbase, kern_physfree;
