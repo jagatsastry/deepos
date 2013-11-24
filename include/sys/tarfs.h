@@ -1,6 +1,7 @@
 #ifndef _TARFS_H
 #define _TARFS_H
 
+
 extern char _binary_tarfs_start;
 extern char _binary_tarfs_end;
 
@@ -23,5 +24,17 @@ struct posix_header_ustar {
 	char prefix[155];
 	char pad[12];
 };
+
+void print_posix_header( struct posix_header_ustar * );
+
+struct posix_header_ustar* get_elf_file(char *);
+
+int matchString( char * , char *);
+
+int atoi(char *);
+
+void map_exe_format();
+
+uint64_t get_entry_address();
 
 #endif

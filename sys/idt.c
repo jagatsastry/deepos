@@ -19,9 +19,19 @@ void idtStart(void);
 idtEntry idt[256];
 idtPointer idtp;
 
+extern void x86_64_isr_vector8();
+extern void x86_64_isr_vector11();
+extern void x86_64_isr_vector13();
+extern void x86_64_isr_vector14();
+
 void install_isrs() 
 {
     install_isr(0, (uint64_t)_isr0);
+    install_isr(8, (uint64_t)x86_64_isr_vector8);
+    install_isr(11, (uint64_t)x86_64_isr_vector11);
+    install_isr(13, (uint64_t)x86_64_isr_vector13);
+    install_isr(14, (uint64_t)x86_64_isr_vector14);
+
     return;
 }
 
@@ -32,7 +42,7 @@ void install_isr(uint08_t isrNum, uint64_t funcPtr)
     isrEnt.baseMid = ((funcPtr >> 16) & 0xFFFF);
     isrEnt.baseHigh = ((funcPtr >> 32) & 0xFFFFFFFF);
     isrEnt.flags = 0x8E;
-    isrEnt.selector = 0x8;
+    isrEnt.selector = 0xb;
     isrEnt.reservedIst = 0;
     isrEnt.reserved = 0;
     

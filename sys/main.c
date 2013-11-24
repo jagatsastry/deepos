@@ -17,8 +17,7 @@ void start(uint32_t* modulep, void* kernmem_addr, void* physbase, void* physfree
 
   vga_phy_addr = 0xB8000;
   vga_virt_addr = vga_phy_addr;
-  printf("Physbase: %x physfree: %x\n", physbase, physfree);
-  printf("Kernmem %x\n",  kernmem_addr);
+  printf("Physbase: %x physfree: %x kernmem: %x\n", physbase, physfree, kernmem_addr);
 	while(modulep[0] != 0x9001) modulep += modulep[1]+2;
   struct smap_t *smap;
 	for(smap = (struct smap_t*)(modulep+2); smap < (struct smap_t*)((char*)modulep+modulep[1]+2*4); ++smap) {
@@ -29,7 +28,7 @@ void start(uint32_t* modulep, void* kernmem_addr, void* physbase, void* physfree
 	}
 	printf("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	init_kernel(modulep, kernmem_addr, physbase, physfree);
-
+  //enter_user_mode();
 	while(1);
 }
 

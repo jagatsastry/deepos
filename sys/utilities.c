@@ -1,6 +1,7 @@
 #include<string.h>
 #include<stdio.h>
-#include <addr.h>
+
+extern volatile uint64_t vga_virt_addr;
 
 char* lpad(char* str)
 {
@@ -26,7 +27,7 @@ void print_key(char key)
 {
     char* preamble = "Uptime: ";
 
-    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 23 * 80 * 2) - 2 * (22 + strlen(preamble)) - 2 * 7);
+    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 25 * 80 * 2) - 2 * (22 + strlen(preamble)) - 2 * 7);
 
     int j = 0;
     scrnLocPtr[j++*2] = '<';
@@ -44,7 +45,7 @@ void print_time(int millis)
     int hourInt = tot_seconds/3600, minInt = (tot_seconds/60)%60, secInt = tot_seconds%60;
 
     char* preamble = "Uptime: ";
-    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 23 * 80 * 2) - 2 * (22 + strlen(preamble)));
+    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 25 * 80 * 2) - 2 * (22 + strlen(preamble)));
     
     int i = 0, j = 0;
 
