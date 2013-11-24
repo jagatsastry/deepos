@@ -51,9 +51,16 @@ void setup_tss() {
 	sd->sd_lolimit = sizeof(struct tss_t)-1; //Size of tss
 	sd->sd_lobase = ((uint64_t)&tss);  //
 	sd->sd_type = 9; // 386 TSS
-	sd->sd_dpl = 0; //Only kernel can change this descriptor
-	sd->sd_p = 1;
+	sd->sd_dpl = 3; //Only kernel can change this descriptor sd->sd_p = 1;
 	sd->sd_hilimit = 0;
 	sd->sd_gran = 0;
 	sd->sd_hibase = ((uint64_t)&tss) >> 24;
+
+  //__asm__ __volatile__("%ax");
+/*
+	__asm__ __volatile__ (
+    "mov $0x2B, %ax;\n"
+    "ltr %ax;\n"
+    "retq;\n"
+   );*/
 }

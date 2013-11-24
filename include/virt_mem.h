@@ -29,37 +29,24 @@ int is_user(uint64_t*);
 void map(uint64_t, uint64_t);
 void map_kernel();
 void load_cr3();
-uint64_t get_VGA_Vaddress();
-void set_VGA_Vaddress(uint64_t);
+void load_kernel_stack();
 void setup_kernel_stack();
 void map_process(uint64_t , uint64_t);
 
-struct PML4{
+typedef struct page_directory_t{
   uint64_t entries[512];
-};
-
-struct PDPT{
-  uint64_t entries[512];
-};
-
-struct PDT{
-  uint64_t entries[512];
-};
-
-struct PT{
-  uint64_t entries[512];
-};
+} page_directory_t;
 
 
-#define PML4_INDEX(x) (((x) >> 39) & 0x1FF)
-#define PDPT_INDEX(x) (((x) >> 30) & 0x1FF)
-#define PDT_INDEX(x) (((x) >> 21) & 0x1FF)
+#define PML4E_INDEX(x) (((x) >> 39) & 0x1FF)
+#define PDPE_INDEX(x) (((x) >> 30) & 0x1FF)
+#define PDE_INDEX(x) (((x) >> 21) & 0x1FF)
 #define PT_INDEX(x) (((x) >> 12) & 0x1FF)
 //#define PAGE_GET_PHYSICAL_ADDRESS(x) (*x & ~0xFFF)
 
-//uint64_t pml4_lookup(struct PML4 *, uint64_t);
-//uint64_t pdpt_lookup(struct PDPT *, uint64_t);
-//uint64_t pdt_lookup(struct PDT *, uint64_t);
+//uint64_t pml4_lookup(struct PML4E *, uint64_t);
+//uint64_t pdpt_lookup(struct PDPE *, uint64_t);
+//uint64_t pdt_lookup(struct PDE *, uint64_t);
 //uint64_t pt_lookup(struct PT *, uint64_t);
 
 

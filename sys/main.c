@@ -28,8 +28,7 @@ void start(uint32_t* modulep, void* kernmem_addr, void* physbase, void* physfree
 	}
 	printf("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	init_kernel(modulep, kernmem_addr, physbase, physfree);
-  //enter_user_mode();
-	while(1);
+//  enter_user_mode();
 }
 
 

@@ -4,6 +4,8 @@
 #include<phy_mem.h>
 #include <utilities.h>
 
+extern void load_kernel_cr3();
+
 void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
   init_physbase_physfree((uint64_t)physbase,(uint64_t)physfree);
   initialize_mem_map();
@@ -16,7 +18,8 @@ void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physf
   }
   map_kernel();
   identity_mapping();
-  load_cr3();
+  setup_kernel_stack();
+  load_kernel_cr3();
   printf("Initialized mem mgmt\n");
 }
 
@@ -48,19 +51,19 @@ int is_user(uint64_t* entry){
   return (*entry & USER_MODE);
 }
 
-uint64_t* pml4_lookup(struct PML4 *pml4, uint64_t virtual_address){
-  return &pml4->entries[PML4_INDEX(virtual_address)];
+uint64_t* pml4_lookup(struct page_directory_t *pml4, uint64_t virtual_address){
+  return &pml4->entries[PML4E_INDEX(virtual_address)];
 }
 
-uint64_t*  pdpt_lookup(struct PDPT *pdpt, uint64_t virtual_address){
-  return &pdpt->entries[PDPT_INDEX(virtual_address)];
+uint64_t*  pdpt_lookup(struct page_directory_t *pdpt, uint64_t virtual_address){
+  return &pdpt->entries[PDPE_INDEX(virtual_address)];
 }
 
-uint64_t* pdt_lookup(struct PDT *pdt, uint64_t virtual_address){
-  return &pdt->entries[PDT_INDEX(virtual_address)];
+uint64_t* pdt_lookup(struct page_directory_t *pdt, uint64_t virtual_address){
+  return &pdt->entries[PDE_INDEX(virtual_address)];
 }
 
-uint64_t* pt_lookup(struct PT *pt, uint64_t virtual_address){
+uint64_t* pt_lookup(struct page_directory_t *pt, uint64_t virtual_address){
   return &pt->entries[PT_INDEX(virtual_address)];
 }
 

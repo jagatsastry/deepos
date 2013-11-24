@@ -6,14 +6,20 @@
 #include <virt_mem.h>
 #include <sys/tarfs.h>
 
+#define ENABLE_INTR 0
 void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physfree);
 void run_elf() ;
 
+  
+
 void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
-  init_pics();
-  idtStart();
+  if(ENABLE_INTR) {
+    init_pics();
+    idtStart();
+  }
   init_mem_mgmt(modulep, kernmem, physbase, physfree);
   printf("Booting Deep-OS\n");
+  while(1);
 //  run_elf();
 }
 

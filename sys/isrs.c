@@ -29,10 +29,10 @@
   "iretq;")
 
 INTERRUPT(8);
+INTERRUPT(10);
 INTERRUPT(11);
 INTERRUPT(13);
 INTERRUPT(14);
-
 
 struct isr_error_stack_frame
 {
@@ -44,36 +44,78 @@ struct isr_error_stack_frame
   uint64_t ss;
 };
 
+#define INTR_HANDLER(_intnum_) \
+  void x86_64_handle_isr_vector ## _intnum_(struct isr_error_stack_frame *stack) {\
+    printf("TRAP# "#_intnum_"!\n");\
+    printf("     ERR:%d\n", stack->error);\
+    printf("     CS : %x\n",stack->cs);\
+    printf("    RIP : %x\n",stack->rip);\
+    printf(" RFLAGS : %x\n",stack->rflags);\
+    printf("    RSP : %x\n",stack->rsp);\
+    printf("     SS : %x\n",stack->ss);\
+    while(1);\
+  }
+
+INTR_HANDLER(6);
+INTR_HANDLER(9);
+INTR_HANDLER(12);
+INTR_HANDLER(15);
+
+INTERRUPT(6);
+INTERRUPT(9);
+INTERRUPT(12);
+INTERRUPT(15);
 
 void x86_64_handle_isr_vector8(struct isr_error_stack_frame *stack) {
 
-  while(1);
   printf("DOUBLE FAULT!\n");
-  printf("   ERR:%d\n",stack->error);
-  printf("    CS:%x\n",stack->cs);
-  printf("   RIP:%lx\n",stack->rip);
+  printf("     ERR:%d\n", stack->error);
+  printf("     CS : %x\n",stack->cs);
+  printf("    RIP : %x\n",stack->rip);
+  printf(" RFLAGS : %x\n",stack->rflags);
+  printf("    RSP : %x\n",stack->rsp);
+  printf("     SS : %x\n",stack->ss);
 
+  while(1);
+}
+
+// TODO - what does thispush onto the stack ?
+void x86_64_handle_isr_vector10(struct isr_error_stack_frame *stack) {
+
+  printf("Invalid TSS!\n");
+  printf("     ERR:%d\n", stack->error);
+  printf("     CS : %x\n",stack->cs);
+  printf("    RIP : %x\n",stack->rip);
+  printf(" RFLAGS : %x\n",stack->rflags);
+  printf("    RSP : %x\n",stack->rsp);
+  printf("     SS : %x\n",stack->ss);
+
+  while(1);
 }
 
 // TODO - what does thispush onto the stack ?
 void x86_64_handle_isr_vector11(struct isr_error_stack_frame *stack) {
 
   printf("SEGMENT NOT PRESENT!\n");
-  printf("    CS:0x%x\n",stack->cs);
-  printf("   RIP:0x%lx\n",stack->rip);
+  printf("     ERR:%d\n", stack->error);
+  printf("     CS : %x\n",stack->cs);
+  printf("    RIP : %x\n",stack->rip);
+  printf(" RFLAGS : %x\n",stack->rflags);
+  printf("    RSP : %x\n",stack->rsp);
+  printf("     SS : %x\n",stack->ss);
 
   while(1);
 }
 
 #define CPU_READ_REG64(_reg_) \
-    static inline uint64_t cpu_read_ ## _reg_() { \
+    uint64_t cpu_read_ ## _reg_() { \
       uint64_t ret = 0; \
       __asm__ __volatile__( "movq %%" #_reg_ ", %0" : "=r" (ret) ); \
       return (ret); \
     }
 
 #define CPU_WRITE_REG64(_reg_) \
-    static inline void cpu_write_ ## _reg_(uint64_t val) { \
+    void cpu_write_ ## _reg_(uint64_t val) { \
       __asm__ __volatile__( "movq %0, %%" #_reg_ : /* no output */ : "r" (val) ); \
     }
 
@@ -81,12 +123,17 @@ CPU_READ_REG64(rsp)
 CPU_READ_REG64(cr0) /* static inline uint64_t cpu_read_cr0() */
 CPU_READ_REG64(cr1) /* static inline uint64_t cpu_read_cr1() */
 CPU_READ_REG64(cr2) /* static inline uint64_t cpu_read_cr2() */
+CPU_READ_REG64(cr3) /* static inline uint64_t cpu_read_cr3() */
 
 void x86_64_handle_isr_vector13(struct isr_error_stack_frame *stack) {
 
   printf("GENERAL PROTECTION EXCEPTION!\n");
-  printf("    CS:0x%x\n",stack->cs);
-  printf("   RIP:0x%lx\n",stack->rip);
+  printf("     ERR:%d\n", stack->error);
+  printf("     CS : %x\n",stack->cs);
+  printf("    RIP : %x\n",stack->rip);
+  printf(" RFLAGS : %x\n",stack->rflags);
+  printf("    RSP : %x\n",stack->rsp);
+  printf("     SS : %x\n",stack->ss);
 
   while(1);
 }
