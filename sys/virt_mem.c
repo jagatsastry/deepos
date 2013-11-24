@@ -247,8 +247,8 @@ void* i_virt_alloc() {
 
 #define MASK (~((1ull<<12) - 1))
 
-uint64_t get_phy_addr(uint64_t addr, uint64_t* pml4e) {
-  uint64_t* pdpe = (uint64_t*)(i_phy_to_virt(pml4e[0x1ff & (addr >> 39)] & MASK));
+uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
+  uint64_t* pdpe = (uint64_t*)(i_phy_to_virt(pml4e->entries[0x1ff & (addr >> 39)] & MASK));
   uint64_t* pde = (uint64_t*)(i_phy_to_virt(pdpe[0x1ff & (addr >> 30)] & MASK));
   uint64_t* pt = (uint64_t*)(i_phy_to_virt(pde[0x1ff & (addr >> 21)] & MASK));
 
