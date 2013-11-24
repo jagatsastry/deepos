@@ -1,3 +1,8 @@
+.global _read_rip
+_read_rip:
+    popq %rax
+    jmpq %rax
+
 
 .global _enter_user_mode
 _enter_user_mode:
