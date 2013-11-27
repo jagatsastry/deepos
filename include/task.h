@@ -14,10 +14,11 @@ typedef struct task
 } task_t;
 
 // Initialises the tasking system.
-void initialise_tasking();
+void initialize_tasking();
 
 // Called by the timer hook, this changes the running process.
-void task_switch();
+void switch_task();
+
 
 // Forks the current process, spawning a new one with a different
 // memory space.
@@ -27,6 +28,6 @@ uint32_t fork();
 void move_stack(void *new_stack_start, uint32_t size);
 
 // Returns the pid of the current process.
-int getpid();
+uint32_t getpid();
 
 #endif

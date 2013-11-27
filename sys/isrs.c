@@ -28,12 +28,6 @@
       "    popq %rax;" \
   "iretq;")
 
-INTERRUPT(8);
-INTERRUPT(10);
-INTERRUPT(11);
-INTERRUPT(13);
-INTERRUPT(14);
-
 struct isr_error_stack_frame
 {
   uint64_t error;
@@ -56,15 +50,22 @@ struct isr_error_stack_frame
     while(1);\
   }
 
-INTR_HANDLER(6);
-INTR_HANDLER(9);
-INTR_HANDLER(12);
-INTR_HANDLER(15);
+INTERRUPT(8);
+INTERRUPT(10);
+INTERRUPT(11);
+INTERRUPT(13);
+INTERRUPT(14);
 
 INTERRUPT(6);
 INTERRUPT(9);
 INTERRUPT(12);
 INTERRUPT(15);
+
+INTR_HANDLER(6);
+INTR_HANDLER(9);
+INTR_HANDLER(12);
+INTR_HANDLER(15);
+
 
 void x86_64_handle_isr_vector8(struct isr_error_stack_frame *stack) {
 
@@ -164,6 +165,7 @@ struct isr_pf_stack_frame
 void x86_64_handle_isr_vector14(struct isr_pf_stack_frame *stack) {
 
   uint64_t vaddr = cpu_read_cr2();
+ 
 
   /*
   if(stack->error.error.p && !(pde & PT_PRESENT_FLAG))

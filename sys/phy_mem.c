@@ -2,8 +2,8 @@
 #include<stdio.h>
 #include<defs.h>
 #include<phy_mem.h>
-#define PHYS_MEM_GB 64
-#define MEM_MAP_SIZE 256
+#define PHYS_MEM_GB 64ull
+#define MEM_MAP_SIZE 4096
 #define PHYS_PAGE_SIZE 4096
 #define PHYS_BLOCK_SIZE 512
 #define MEM_NOTAVAILABLE 0
@@ -43,15 +43,15 @@ uint64_t get_physbase(){
 }
 
 void mmap_set (uint64_t bit) {
-   mem_map[bit / 64] |= (1ull << (bit % 64));
+   mem_map[bit / 64ull] |= (1ull << (bit % 64ull));
 }
 
 void mmap_unset (uint64_t bit) {
-  mem_map[bit / 64] &= ~ (1ull << (bit % 64));
+  mem_map[bit / 64ull] &= ~ (1ull << (bit % 64ull));
 }
 
-int mmap_test (int bit) {
-  return mem_map[bit / 64] &  (1ull << (bit % 64));
+uint64_t mmap_test (uint64_t bit) {
+  return mem_map[bit / 64ull] &  (1ull << (bit % 64ull));
 }
 
 void initialize_mem_map() {
@@ -62,15 +62,15 @@ void initialize_mem_map() {
        mem_map[i] = MEM_NOTAVAILABLE;
   }
 
- physfree += (uint64_t)(MEM_MAP_SIZE*64/8);
+ physfree += (uint64_t)(MEM_MAP_SIZE*64ull/8);
  set_physfree(physfree);
 }
 
 void init_region (uint64_t  base, uint64_t limit) {
 
   set_max_phys(limit);
-  int start = base / PHYS_PAGE_SIZE;
-  int end = limit / PHYS_PAGE_SIZE;
+  uint64_t start = base / PHYS_PAGE_SIZE;
+  uint64_t end = limit / PHYS_PAGE_SIZE;
   mmap_unset(0);
   mmap_unset(1);
   for (; start<=end; start++) {
@@ -82,7 +82,7 @@ void init_region (uint64_t  base, uint64_t limit) {
     }
    }
  
-  int sta = 0;
+  uint64_t sta = 0;
   for(uint64_t low=0; low < 0x100000; low += 0x1000){
     sta ++;
     mmap_unset(sta);
@@ -94,10 +94,10 @@ uint64_t get_index_of_free_page(){
  for( i =0; i<MEM_MAP_SIZE; i++){  
 
   uint64_t k =0;
-  for(k = 0; k<64; k++){
+  for(k = 0; k<64ull; k++){
     uint64_t  bit = 1ull << k;
      if(mem_map[i]&bit){
-         return i*64+k;
+         return i*64ull+k;
     }
    }
   }
@@ -105,9 +105,12 @@ uint64_t get_index_of_free_page(){
 }
 
 void* page_alloc() {
-  int index =  get_index_of_free_page();
-  if (index  == -1)
+  uint64_t index =  get_index_of_free_page();
+  if (index  == -1) {
     return NULL;//out of memory
+    printf("OUT OF MEMORY!");
+    while(1);
+  }
   mmap_unset(index);
   uint64_t  addr = index * PHYS_PAGE_SIZE;
 
@@ -116,6 +119,6 @@ void* page_alloc() {
 
 void page_dealloc (void* p) {
   uint64_t addr = (uint64_t) p;
-  int index = addr / PHYS_PAGE_SIZE;
+  uint64_t index = addr / PHYS_PAGE_SIZE;
   mmap_set (index);
 }

@@ -5,8 +5,9 @@
 #include <phy_mem.h>
 #include <virt_mem.h>
 #include <sys/tarfs.h>
+#include <task.h>
 
-#define ENABLE_INTR 0
+#define ENABLE_INTR 1
 void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physfree);
 void run_elf() ;
 
@@ -26,13 +27,25 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
     init_pics();
     idtStart();
   }
+/*
+  uint64_t rflags = 0;
+  __asm__ __volatile__ (
+   "pushfq;\n"
+   "popq %%rax\n"
+   "movq %%rax, %0" : "=r"(rflags));
+
+  printf("Flags: %x\n", rflags);
+  while(1);
+  */
   init_mem_mgmt(modulep, kernmem, physbase, physfree);
+
   printf("Booting Deep-OS\n");
   //setup_kernel_stack();
   printf("Kernmem virt: %x\n", kernmem);
   printf("Kernmem before: %x\n", get_phy_addr((uint64_t)kernmem, 
       kern_pml4e_virt));
 
+/*
   //set_PMLF4_Vaddress((uint64_t)clone_page_directory((uint64_t*)get_PMLF4_Vaddress(), 4));
   cur_pml4e_virt = clone_page_directory(kern_pml4e_virt, 4);
 
@@ -44,9 +57,12 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
   __asm__ __volatile__("movq %0, %%cr3":: "b"(i_virt_to_phy((uint64_t)cur_pml4e_virt)));
   printf("\nBack\n");
   printf("After: %x\n", cpu_read_cr3());
+  */
+  initialize_tasking();
+  fork();
+  printf("Back after a simple switch. Current PID %d\n", getpid());
   while(1);
     
-
 //  run_elf();
 }
 

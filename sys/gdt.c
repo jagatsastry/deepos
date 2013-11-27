@@ -57,10 +57,4 @@ void setup_tss() {
 	sd->sd_hibase = ((uint64_t)&tss) >> 24;
 
   //__asm__ __volatile__("%ax");
-/*
-	__asm__ __volatile__ (
-    "mov $0x2B, %ax;\n"
-    "ltr %ax;\n"
-    "retq;\n"
-   );*/
 }

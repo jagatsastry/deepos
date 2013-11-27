@@ -257,20 +257,36 @@ uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
   return phy_addr & MASK;
 }
 
-page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) {
-  if (level == 1)  {
-    //printf("Returning %x\n", (uint64_t)tab_src);
-    uint64_t* newFrame = (uint64_t*)i_virt_alloc();
-    memcpy(newFrame, tab_src, 4096);
-    return (page_directory_t*)newFrame;
+#define ENABLE_COW_MASK 0x100
+#define MARK_READ_ONLY_MASK ~
+page_directory_t* clone_page_directory(page_directory_t* tab_src, int level, int markCOW) {
+  if(i_virt_to_phy((uint64_t)tab_src) == 0x208000) {
+    printf("Alert: Wanted stuff");
   }
-  printf("Level: %x\n", level);
 
+  if (level == 0)  {
+    if (i_virt_to_phy((uint64_t)tab_src) < 0x100000) return tab_src;
+    //printf("Returning %x\n", (uint64_t)tab_src);
+//    uint64_t* newFrame = (uint64_t*)i_virt_alloc();
+//    if ((uint64_t)newFrame == 0xFFFFFFFFF0000000ull)
+//     printf("%d Copying frame from %x to %x\n", level, tab_src, newFrame);
+//    memcpy(newFrame, tab_src, 4096);
+
+//    return (page_directory_t*)newFrame;
+
+    //Mark it as copy on write
+    add_attribute((uint64_t*)tab_src, ENABLE_COW_MASK);
+    delete_attribute((uint64_t*)tab_src, WRITABLE);
+    return tab_src;
+  }
+
+//  printf("Level: %x\n", level);
   page_directory_t* tab_new = (page_directory_t*)i_virt_alloc();
   int i = 0;
   for (i = 0; i < 512; i++) {
     if (is_present(&tab_src->entries[i])) {
-      page_directory_t* newPage = clone_page_directory((page_directory_t*)i_phy_to_virt(tab_src->entries[i] & MASK), level - 1);
+      uint64_t virt = i_phy_to_virt(tab_src->entries[i] & MASK);
+      page_directory_t* newPage = clone_page_directory((page_directory_t*)virt, level - 1);
       tab_new->entries[i] = i_virt_to_phy((uint64_t)newPage) | (tab_src->entries[i] & 0XFFF);
     }
   }

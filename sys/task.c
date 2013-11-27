@@ -48,9 +48,13 @@ extern void* i_virt_alloc();
 uint32_t next_pid = 1;
 extern page_directory_t* clone_page_directory(page_directory_t* tab_src, int level);
 
-void initialise_tasking()
+void initialize_tasking()
 {
+  /*
+  putc('h');
    __asm__ __volatile__("cli");
+   __asm__ __volatile__("sti");
+  putc('h');*/
 
    // Relocate the stack so we know where it is.
    // Initialise the first task (kernel task)
@@ -62,9 +66,12 @@ void initialise_tasking()
    current_task->next = 0;
 
    // Reenable interrupts.
-   __asm__ __volatile__("sti");
+   printf("Multi task system initialized\n");
 }
 
+uint32_t getpid() {
+  return current_task->id;
+}
 
 uint32_t fork()
 {
@@ -78,11 +85,9 @@ uint32_t fork()
    task_t *new_task = (task_t*)i_virt_alloc(); //kmalloc(sizeof(task_t));
 
    // Clone the address space.
-   page_directory_t *directory = clone_page_directory(cur_pml4e_virt, 4);
    new_task->id = next_pid++;
    new_task->rsp = new_task->rbp = 0;
    new_task->rip = 0;
-   new_task->pml4e = directory;
    new_task->next = 0;
 
    // Add it to the end of the ready queue.
@@ -92,23 +97,29 @@ uint32_t fork()
        tmp_task = tmp_task->next;
    // ...And extend it.
    tmp_task->next = new_task;
+
+   //page_directory_t *directory = 
+   new_task->pml4e = clone_page_directory(cur_pml4e_virt, 4);
   // This will be the entry point for the new process.
   uint64_t rip = _read_rip();
    // We could be the parent or the child here - check.
    if (current_task == parent_task)
    {
+     printf("In the parent task\n");
        // We are the parent, so set up the esp/ebp/eip for our child.
        uint64_t rsp; __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
        uint64_t rbp; __asm__ __volatile__("movq %%rbp, %0" : "=r"(rbp));
        new_task->rsp = rsp;
        new_task->rbp = rbp;
        new_task->rip = rip;
+       printf("New tas: rsp %x, rbp %x, rip %x\n", rsp, rbp, rip);
        // All finished: Reenable interrupts.
        __asm__ __volatile__("sti");
        return new_task->id;
    }
    else
    {
+     printf("In the child task\n");
        __asm__ __volatile__("sti");
        // We are the child - by convention return 0.
        return 0;
@@ -120,13 +131,17 @@ extern uint64_t i_virt_to_phy(uint64_t phy);
 void switch_task()
 {
    // If we haven't initialised tasking yet, just return.
-   if (!current_task)
+   if (!current_task) {
+     printf("Havent initilized yet\n");
        return;
+   }
 
+  printf("Switching\n");
   // Read esp, ebp now for saving later on.
   uint64_t rsp, rbp, rip;
   __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
   __asm__ __volatile__("movq %%rbp, %0" : "=r"(rbp));
+  printf("rsp is %x\n", rsp);
 
    // Read the instruction pointer. We do some cunning logic here:
    // One of two things could have happened when this function exits -
@@ -140,8 +155,12 @@ void switch_task()
    rip = _read_rip();
 
    // Have we just switched tasks?
-   if (rip == 0x12345)
+  printf("Rip is %x\n", rip);
+   if (rip == 0x12345) {
+      __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
+       printf("Rsp now %x\n", rsp);
        return;
+   }
 
   // No, we didn't switch tasks. Let's save some register values and switch.
    current_task->rip = rip;
@@ -153,6 +172,7 @@ void switch_task()
    if (!current_task) current_task = ready_queue;
    rsp = current_task->rsp;
    rbp = current_task->rbp;
+   rip = current_task->rip;
    cur_pml4e_virt = current_task->pml4e;
    // Here we:
    // * Stop interrupts so we don't get interrupted.
@@ -164,6 +184,8 @@ void switch_task()
    // * Restart interrupts. The STI instruction has a delay - it doesn't take effect until after
    // the next instruction.
    // * Jump to the location in ECX (remember we put the new EIP in there).
+   printf("Setting rsp %x, rip\n", rsp);
+   printf("Swithing 1\n");
    __asm__ __volatile__(
      "         \
      cli;                 \
@@ -175,5 +197,6 @@ void switch_task()
      sti;                 \
      jmpq *%%rcx           "
      : : "r"(rip), "r"(rsp), "r"(rbp), "r"(i_virt_to_phy((uint64_t)cur_pml4e_virt)));
+   printf("Swithing 2\n");
 }
 
