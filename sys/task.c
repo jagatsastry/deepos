@@ -113,6 +113,7 @@ uint32_t fork()
        new_task->rbp = rbp;
        new_task->rip = rip;
        printf("New tas: rsp %x, rbp %x, rip %x\n", rsp, rbp, rip);
+       printf("New tas: rsp %x, rbp %x, \n", kern_pml4e_virt, cur_pml4e_virt );
        // All finished: Reenable interrupts.
        __asm__ __volatile__("sti");
        return new_task->id;
