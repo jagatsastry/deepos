@@ -17,6 +17,10 @@
 #define NX 0x8000000000000 
 #define FRAME 0xFFFFFFFFFFFFF000
 
+typedef struct page_directory_t{
+  uint64_t entries[512];
+} page_directory_t;
+
 
 void add_attribute(uint64_t*, uint64_t);
 void delete_attribute(uint64_t*, uint64_t);
@@ -32,10 +36,7 @@ void load_cr3();
 void load_kernel_stack();
 void setup_kernel_stack();
 void map_process(uint64_t , uint64_t);
-
-typedef struct page_directory_t{
-  uint64_t entries[512];
-} page_directory_t;
+void map_process_specific(uint64_t, uint64_t, page_directory_t *);
 
 
 #define PML4E_INDEX(x) (((x) >> 39) & 0x1FF)

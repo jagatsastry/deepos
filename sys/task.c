@@ -3,8 +3,10 @@
 #include <task.h>
 #include <virt_mem.h>
 #include <sys/gdt.h>
+#include <stdlib.h>
 
 extern void _enter_user_mode();
+extern uint64_t i_virt_to_phy(uint64_t phy);
 extern struct tss_t tss;
 
 typedef uint32_t taskid_t;
@@ -109,7 +111,10 @@ uint32_t fork()
        // We are the parent, so set up the esp/ebp/eip for our child.
        uint64_t rsp; __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
        uint64_t rbp; __asm__ __volatile__("movq %%rbp, %0" : "=r"(rbp));
-       new_task->rsp = rsp;
+       uint64_t* new_stack = (uint64_t*)i_virt_alloc();
+       map_process_specific((uint64_t)new_stack, i_virt_to_phy((uint64_t)new_stack), new_task->pml4e);
+       memcpy((void*)new_stack, (void*)rsp, 4096);
+       new_task->rsp = (uint64_t)new_stack;
        new_task->rbp = rbp;
        new_task->rip = rip;
        printf("New tas: rsp %x, rbp %x, rip %x\n", rsp, rbp, rip);
@@ -130,7 +135,6 @@ uint32_t fork()
    }
 }
 
-extern uint64_t i_virt_to_phy(uint64_t phy);
 
 void switch_task()
 {

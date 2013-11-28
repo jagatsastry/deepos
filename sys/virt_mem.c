@@ -72,11 +72,14 @@ void setup_kernel_stack(){
 }
 
 void map_process(uint64_t virtual_address, uint64_t physical_address){
+  map_process_specific(virtual_address, physical_address, cur_pml4e_virt);
+}
+
+void map_process_specific(uint64_t virtual_address, uint64_t physical_address, page_directory_t * pml4e){
 
   struct page_directory_t *pdpt;
   struct page_directory_t  *pdt;
   struct page_directory_t   *pt;
-  struct page_directory_t *pml4e = (struct page_directory_t *)cur_pml4e_virt;
 
   uint64_t pml4e_entry =  pml4e->entries[PML4E_INDEX((uint64_t)virtual_address)];
   if(is_present(&pml4e_entry)){
@@ -192,6 +195,7 @@ void map(uint64_t virtual_address, uint64_t physical_address){
     pt->entries[PT_INDEX((uint64_t)virtual_address)] = entry;
 }
 
+#define ID_MAPPED_PAGE 0x200
 void identity_mapping(){
 
   uint64_t virtualaddr = IDENTITY_MAP_VIRTUAL_START;
@@ -258,8 +262,7 @@ uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
 }
 
 #define ENABLE_COW_MASK 0x100
-#define MARK_READ_ONLY_MASK ~
-page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) {
+page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level) {
   if(i_virt_to_phy((uint64_t)tab_src) == 0x208000) {
     printf("Alert: Wanted stuff");
   }
@@ -286,9 +289,61 @@ page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) {
   for (i = 0; i < 512; i++) {
     if (is_present(&tab_src->entries[i])) {
       uint64_t virt = i_phy_to_virt(tab_src->entries[i] & MASK);
-      page_directory_t* newPage = clone_page_directory((page_directory_t*)virt, level - 1);
+      page_directory_t* newPage = clone_page_directory_old((page_directory_t*)virt, level - 1);
       tab_new->entries[i] = i_virt_to_phy((uint64_t)newPage) | (tab_src->entries[i] & 0XFFF);
     }
   }
   return tab_new;
 }
+
+
+page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) {
+  if(i_virt_to_phy((uint64_t)tab_src) == 0x208000) {
+    printf("Alert: Wanted stuff");
+  }
+
+  if (level == 0)  {
+    if (i_virt_to_phy((uint64_t)tab_src) < 0x100000) return tab_src;
+    //printf("Returning %x\n", (uint64_t)tab_src);
+//    uint64_t* newFrame = (uint64_t*)i_virt_alloc();
+//    if ((uint64_t)newFrame == 0xFFFFFFFFF0000000ull)
+//     printf("%d Copying frame from %x to %x\n", level, tab_src, newFrame);
+//    memcpy(newFrame, tab_src, 4096);
+
+//    return (page_directory_t*)newFrame;
+
+    //Mark it as copy on write
+   //*((uint64_t*)tab_src) = 10;
+    printf("Tab src before %x", *((uint64_t*)tab_src));
+    add_attribute((uint64_t*)tab_src, ENABLE_COW_MASK);
+    delete_attribute((uint64_t*)tab_src, WRITABLE);
+    printf("Tab src after %x", *((uint64_t*)tab_src));
+    while(1);
+    return tab_src;
+  }
+
+//  printf("Level: %x\n", level);
+  page_directory_t* tab_new = (page_directory_t*)i_virt_alloc();
+  int i = 0;
+  for (i = 0; i < 512; i++) {
+    if (is_present(&tab_src->entries[i])) {
+      uint64_t virt = i_phy_to_virt(tab_src->entries[i] & MASK);
+      if (level == 1) {
+ //       printf("Before: %x \n", tab_src->entries[i]);
+        //if (i_virt_to_phy((uint64_t)tab_src) < 0x100000)
+          tab_new->entries[i] = tab_src->entries[i];
+       // else {
+         // tab_new->entries[i] = (tab_src->entries[i] | ENABLE_COW_MASK) & ~WRITABLE;
+          //tab_src->entries[i] = (tab_src->entries[i] | ENABLE_COW_MASK) & ~WRITABLE;
+        //}
+        //printf("After: %x ", tab_src->entries[i]);
+        //printf("After: %x ", tab_new->entries[i]);
+      } else {
+        page_directory_t* newPage = clone_page_directory((page_directory_t*)virt, level - 1);
+        tab_new->entries[i] = i_virt_to_phy((uint64_t)newPage) | (tab_src->entries[i] & 0XFFF);
+      }
+    }
+  }
+  return tab_new;
+}
+
