@@ -121,8 +121,11 @@ uint32_t fork()
    else
    {
      printf("In the child task\n");
+       printf("Returning");
+       //__asm__ __volatile__("cli");
        __asm__ __volatile__("sti");
        // We are the child - by convention return 0.
+       printf("Returning");
        return 0;
    }
 }
