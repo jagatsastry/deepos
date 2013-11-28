@@ -259,7 +259,7 @@ uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
 
 #define ENABLE_COW_MASK 0x100
 #define MARK_READ_ONLY_MASK ~
-page_directory_t* clone_page_directory(page_directory_t* tab_src, int level, int markCOW) {
+page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) {
   if(i_virt_to_phy((uint64_t)tab_src) == 0x208000) {
     printf("Alert: Wanted stuff");
   }
