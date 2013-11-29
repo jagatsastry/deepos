@@ -1,7 +1,15 @@
 obj/*
 obj/*/*
 *.o
+*.a
+*.so
+kernel
+*.swp
 rootfs/bin/*.o
 rootfs/lib/*.o
 rootfs/lib/*.a
 rootfs/lib/*.so
+*/bin/*
+bin/*
+*.iso
+.nfs*

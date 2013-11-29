@@ -60,10 +60,12 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
   */
   initialize_tasking();
   fork();
-  printf("Back after a simple switch. Current PID %d\n", getpid());
+  run_elf();
   while(1);
-    
-//  run_elf();
+  printf("Back after a simple switch. Current PID %d\n", getpid());
+  //while(1) { 
+  //printf("Back after a simple switch. Current PID %d\n", getpid());
+  //};
 }
 
 void run_elf() {
