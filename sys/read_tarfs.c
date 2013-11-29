@@ -22,7 +22,7 @@ void print_posix_header( struct posix_header_ustar *p){
 
 
 
-struct posix_header_ustar* get_elf_file(char *binary_tarfs_start) {
+struct posix_header_ustar* get_elf_file(char *binary_tarfs_start, char* filename) {
 
 
   // printf("\n  %p",binary_tarfs_start);
@@ -40,13 +40,12 @@ struct posix_header_ustar* get_elf_file(char *binary_tarfs_start) {
 
 //char *c = binary_tarfs_start;
 //char *p = "bin";
-   char *value = "bin/hello";
 
 //printf("\n string match %d: ",matchString( p , temp));
 // printf("\n %s",temp);
    char *temp = binary_tarfs_start;
   
-   while(matchString(tar_p->name,value)!=0){
+   while(matchString(tar_p->name,filename)!=0){
 
      temp = temp + 512  + atoi(tar_p->size);
         tar_p=(struct posix_header_ustar *)temp;
@@ -98,6 +97,9 @@ for ( ; p1<c+200;p1++){
   */
    }
 
+void jump_to_start(uint64_t entryAddress) {
+  __asm__ __volatile__("jmp %0"::"r"(entryAddress));
+}
 
 void map_exe_format(){
 
@@ -182,11 +184,11 @@ void map_exe_format(){
   //moving the instruction pointer
   
   //  __asm__ __volatile__("movq %0,%%rip;"::"g"(entryAddress));
-  
-  __asm__ __volatile__("jmp %0"::"r"(entryAddress));
+  jump_to_start(entryAddress);
 
 
 }
+
 
 uint64_t get_entry_address(){
   
@@ -228,3 +230,16 @@ int matchString( char *s , char *t){
   return ret;
 
 }
+
+
+int exec(char* filename) {
+  struct  posix_header_ustar *tar_p= get_elf_file(&_binary_tarfs_start, filename);
+  print_posix_header(tar_p);
+  char* x = tar_p->size;
+  printf("\n%s\n", x);
+  printf("\n%s\n", x);
+  printf("hi\n");
+  map_exe_format();
+  return 0;
+}
+

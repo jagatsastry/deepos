@@ -9,7 +9,6 @@
 
 #define ENABLE_INTR 1
 void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physfree);
-void run_elf() ;
 
 extern page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) ;
 
@@ -21,7 +20,7 @@ extern uint64_t cpu_read_cr3();
 
 extern uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e);
   
-
+extern int exec(char*);
 void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
   if(ENABLE_INTR) {
     init_pics();
@@ -58,16 +57,16 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
   printf("\nBack\n");
   printf("After: %x\n", cpu_read_cr3());
   */
+  exec("bin/hello");
+  while(1);
   initialize_tasking();
   fork();
-  run_elf();
-  while(1);
   printf("Back after a simple switch. Current PID %d\n", getpid());
   //while(1) { 
   //printf("Back after a simple switch. Current PID %d\n", getpid());
   //};
 }
-
+/*
 void run_elf() {
   struct  posix_header_ustar *tar_p= get_elf_file(&_binary_tarfs_start);
   print_posix_header(tar_p);
@@ -77,3 +76,4 @@ void run_elf() {
   printf("hi\n");
   map_exe_format();
 }
+*/

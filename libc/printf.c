@@ -2,5 +2,5 @@ int printf(const char *format, ...) {
   int a = 0;
   a++; a--;
 
-	return 1;
+	return 1/a;
 }
