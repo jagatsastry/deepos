@@ -239,6 +239,7 @@ int exec(char* filename) {
   current_task->u_rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
 
   current_task->rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
+  current_task->tss_rsp = (uint64_t)current_task->rsp;
   printf("Move the stack temporarily\n");
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
   __asm volatile("pushq $0x23\n\t"
@@ -247,8 +248,8 @@ int exec(char* filename) {
                  "pushq $0x1b\n\t"
                  "pushq %1\n\t"
        : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
+  
   __asm__ __volatile__ (
-
             "pushq %rax;\n"
             "pushq %rbx;\n"
             "pushq %rcx;\n"
@@ -260,6 +261,8 @@ int exec(char* filename) {
             "pushq %r10;\n"
             "pushq %r11;\n");
   current_task->run_time = 0; 
+ __asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
+  printf("Current rsp of process %d: %x line: %d\n", current_task->id, current_task->rsp, __LINE__);
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
   printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
 

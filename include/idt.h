@@ -24,7 +24,9 @@ typedef struct {
    uint16_t   baseLow;
    uint16_t   selector;
    uint08_t  reservedIst;
+   //0x1(present)11(dpl)0(zero)1110(type)
    uint08_t   flags;
+
    uint16_t   baseMid;
    uint32_t   baseHigh;
    uint32_t   reserved;

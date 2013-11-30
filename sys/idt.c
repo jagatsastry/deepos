@@ -44,8 +44,9 @@ void install_isr(uint08_t isrNum, uint64_t funcPtr)
     isrEnt.baseLow = (funcPtr & 0xFFFF);
     isrEnt.baseMid = ((funcPtr >> 16) & 0xFFFF);
     isrEnt.baseHigh = ((funcPtr >> 32) & 0xFFFFFFFF);
-    isrEnt.flags = 0x8E;
-    isrEnt.selector = 0xb;
+    //0x1(p)11(dpl)0(zero)1110(type: disable intr on intr entry. reenable on exit)
+    isrEnt.flags = 0xEE; 
+    isrEnt.selector = 0xB;
     isrEnt.reservedIst = 0;
     isrEnt.reserved = 0;
     

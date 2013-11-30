@@ -171,6 +171,7 @@ uint32_t fork()
 
        __asm__ __volatile__("movq %%rsp, %0" : "=r"(new_task->rsp));
 
+printf("Updated rsp for %d to %x: %d\n", new_task->id, new_task->rsp, __LINE__);
         __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
 
        //__asm__ __volatile__("sti");

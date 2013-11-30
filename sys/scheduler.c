@@ -26,7 +26,12 @@ void switch_task()
   //tss.rsp is where the stack begins. We need to move to the position just before timer is called, so that we can pop all the registers
   //current_task->rsp = tss.rsp0 - TSS_RSP_OFFSET;
 //  __asm volatile( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
- __asm__ __volatile__("movq %%rsp, %0;":"=g"(current_task->rsp));
+  //Do not update the rsp if it is coming here for the first time and it is not the kernel task
+  //You update rsp only when it has passed through the switch task atleast once, or it is the kernel task
+  if (current_task->run_time >= SCHEDULE_FREQUENCY || current_task->id == 1)   {
+   __asm__ __volatile__("movq %%rsp, %0;":"=g"(current_task->rsp));
+   printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
+  }
    
   //printf("Switching\n");
 
@@ -40,9 +45,9 @@ void switch_task()
   printf("Try to switch to process %d\n", current_task->id); 
   cpu_write_cr3(i_virt_to_phy((uint64_t)cur_pml4e_virt));
 //  cpu_write_rsp(current_task->rsp);
+printf("Setting rsp %x for process %d: %d\n", current_task->rsp, current_task->id, __LINE__);
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
-  current_task->run_time += SCHEDULE_FREQUENCY;
-  if (current_task->run_time == SCHEDULE_FREQUENCY && current_task->id != 1)  {
+  if (current_task->run_time < SCHEDULE_FREQUENCY && current_task->id != 1)  {
     printf("Returning now");
     __asm__ __volatile__(
             "popq %r11;\n"
@@ -59,9 +64,11 @@ void switch_task()
     port_outb(0xA0, 0x20);
     port_outb(0x20, 0x20);
 
-    __asm__ __volatile__("iretq");
+  current_task->run_time += SCHEDULE_FREQUENCY;
+    __asm__ __volatile__("iretq" ::: "memory");
 
   }
   printf("Switched to task: %d Num tasks: %d\n", current_task->id, numtasks());   //printf("Swithing 2\n");
+  current_task->run_time += SCHEDULE_FREQUENCY;
 }
 
