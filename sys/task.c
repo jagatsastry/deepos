@@ -56,7 +56,7 @@ task_t* get_next_ready_task() {
    
   int i = 1;
   for (i = 0; i < MAX_TASKS; i++) {
-    task_t *task = &ready_queue[startIdx%MAX_TASKS];
+    task_t *task = &ready_queue[(startIdx + i) %MAX_TASKS];
     //printf("Task %d Status %d\n", task->id, task->STATUS);
     if (task->STATUS == TASK_READY)
       return task;
@@ -67,16 +67,17 @@ task_t* get_next_ready_task() {
 
 task_t* get_next_free_task() {
   int i = 0;
-  for (i = 0; i < MAX_TASKS; i++)
+  for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].STATUS == TASK_FREE)
       return ready_queue + i;
+  }
   printf("\nERR: TASK LIMIT EXCEEDED\n");
   while(1);
 }
 
 void initialize_tasking()
 {
-  __asm__ __volatile__("cli");
+  //__asm__ __volatile__("cli");
    int i = 0;
    for (i = 0; i < MAX_TASKS; i++)
      ready_queue[i].index = i;
@@ -99,7 +100,7 @@ void initialize_tasking()
    //__asm__ __volatile__("movq $0x2B,%rax;");//::"r"(&tem));
    //__asm__ __volatile__("ltr %rax;");
    printf("Multi task system initialized\n");
-  __asm__ __volatile__("sti");
+//  __asm__ __volatile__("sti");
 
 }
 
@@ -110,7 +111,7 @@ volatile uint64_t temp_rsp;
 uint32_t fork()
 {
    // We are modifying kernel structures, and so cannot be interrupted.
-   __asm__ __volatile__("cli");
+   //__asm__ __volatile__("cli");
 
    // Take a pointer to this process' task struct for later reference.
    task_t *parent_task = (task_t*)current_task;
@@ -138,10 +139,10 @@ uint32_t fork()
        __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
       printf("RSP is %x\n", temp_rsp);
        // We are the parent, so set up the esp/ebp/eip for our child.
-       new_task->u_rsp = (uint64_t)i_virt_alloc();
-       map_process_specific((uint64_t)new_task->u_rsp, i_virt_to_phy((uint64_t)new_task->u_rsp), new_task->pml4e);
-       memcpy((void*)new_task->u_rsp, (void*)temp_rsp, 4096);
-       new_task->u_rsp = new_task->u_rsp + 4096 - 1;
+       uint64_t u_rsp  = (uint64_t)i_virt_alloc();
+       map_process_specific((uint64_t)u_rsp, i_virt_to_phy((uint64_t)u_rsp), new_task->pml4e);
+       memcpy((void*)u_rsp + 2048 - 1, (void*)temp_rsp, 2048);
+       new_task->u_rsp = u_rsp + 2048 - 1;
 
        new_task->rsp = (uint64_t)i_virt_alloc() ;
        map_process_specific((uint64_t)new_task->rsp, i_virt_to_phy((uint64_t)new_task->rsp), new_task->pml4e);
@@ -172,7 +173,7 @@ uint32_t fork()
 
         __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
 
-       __asm__ __volatile__("sti");
+       //__asm__ __volatile__("sti");
        printf("Set stack for child\n");
        return new_task->id;
    }

@@ -15,7 +15,8 @@ void timer_handler(struct regs *r)
 {
     static int timer_ticks = 0;
 
-    if (timer_ticks % 18 == 0) {
+    timer_ticks++;
+    if ((timer_ticks-1) % 18 == 0) {
         print_time(timer_ticks);
 //        printf("Num tasks: %d\n", numtasks());
         if (current_task) {
@@ -24,6 +25,5 @@ void timer_handler(struct regs *r)
           //printf("Back from switch task\n");
         }
     }
-    timer_ticks++;
 }
 

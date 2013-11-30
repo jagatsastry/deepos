@@ -225,7 +225,7 @@ extern void* i_virt_alloc();
 
 uint64_t temp_rsp;
 int exec(char* filename) {
-  __asm__ __volatile__("cli");
+  //__asm__ __volatile__("cli");
   struct  posix_header_ustar *tar_p = get_elf_file(&_binary_tarfs_start, filename);
   print_posix_header(tar_p);
   char* x = tar_p->size;
@@ -241,6 +241,12 @@ int exec(char* filename) {
   current_task->rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
   printf("Move the stack temporarily\n");
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
+  __asm volatile("pushq $0x23\n\t"
+                 "pushq %0\n\t"
+                 "pushq $0x200292\n\t"
+                 "pushq $0x1b\n\t"
+                 "pushq %1\n\t"
+       : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
   __asm__ __volatile__ (
 
             "pushq %rax;\n"
@@ -253,17 +259,11 @@ int exec(char* filename) {
             "pushq %r9;\n"
             "pushq %r10;\n"
             "pushq %r11;\n");
-  __asm volatile("pushq $0x23\n\t"
-                 "pushq %0\n\t"
-                 "pushq $0x200292\n\t"
-                 "pushq $0x1b\n\t"
-                 "pushq %1\n\t"
-       : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
-    
+  current_task->run_time = 0; 
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
   printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
 
-  __asm__ __volatile__("sti");
+ // __asm__ __volatile__("sti");
   return 0;
 }
 

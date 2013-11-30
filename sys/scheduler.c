@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <sys/gdt.h>
 #include <virt_mem.h>
+#include <pic.h>
 
 extern void cpu_write_cr3(uint64_t val);
 extern void cpu_write_rsp(uint64_t val);
@@ -36,14 +37,12 @@ void switch_task()
 
   tss.rsp0 = current_task->tss_rsp;
   cur_pml4e_virt = current_task->pml4e;
-  
-    printf("Returning now");
+  printf("Try to switch to process %d\n", current_task->id); 
   cpu_write_cr3(i_virt_to_phy((uint64_t)cur_pml4e_virt));
 //  cpu_write_rsp(current_task->rsp);
-    printf("Returning now");
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
   current_task->run_time += SCHEDULE_FREQUENCY;
-  if (current_task->run_time == SCHEDULE_FREQUENCY)  {
+  if (current_task->run_time == SCHEDULE_FREQUENCY && current_task->id != 1)  {
     printf("Returning now");
     __asm__ __volatile__(
             "popq %r11;\n"
@@ -57,7 +56,10 @@ void switch_task()
             "popq %rbx;\n"
             "popq %rax;\n");
 
-    __asm__ __volatile__("iretq":::"memory");
+    port_outb(0xA0, 0x20);
+    port_outb(0x20, 0x20);
+
+    __asm__ __volatile__("iretq");
 
   }
   printf("Switched to task: %d Num tasks: %d\n", current_task->id, numtasks());   //printf("Swithing 2\n");

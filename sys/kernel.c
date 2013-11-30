@@ -76,7 +76,6 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
     printf("Execing");
     exec ("bin/hello");
     printf("Back after exec");
-    while(1);
   }
   printf("Back after a simple switch. Current PID %d\n", getpid());
   while(1);
