@@ -30,20 +30,36 @@ void switch_task()
   //printf("Switching\n");
 
   // Get the next task to run.
-  current_task = current_task->next;
+  current_task = get_next_ready_task();
   // If we fell off the end of the linked list start again at the beginning.
-  if (!current_task) current_task = ready_queue;
   //When it was interrupted the last time, we stored the position from where we can now pop all the stuff
 
   tss.rsp0 = current_task->tss_rsp;
   cur_pml4e_virt = current_task->pml4e;
   
+    printf("Returning now");
   cpu_write_cr3(i_virt_to_phy((uint64_t)cur_pml4e_virt));
 //  cpu_write_rsp(current_task->rsp);
+    printf("Returning now");
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
+  current_task->run_time += SCHEDULE_FREQUENCY;
+  if (current_task->run_time == SCHEDULE_FREQUENCY)  {
+    printf("Returning now");
+    __asm__ __volatile__(
+            "popq %r11;\n"
+            "popq %r10;\n"
+            "popq %r9;\n"
+            "popq %r8;\n"
+            "popq %rdi;\n"
+            "popq %rsi;\n"
+            "popq %rdx;\n"
+            "popq %rcx;\n"
+            "popq %rbx;\n"
+            "popq %rax;\n");
 
-   
-  //printf("Current ID: %d\n", current_task->id);   
-  //printf("Swithing 2\n");
+    __asm__ __volatile__("iretq":::"memory");
+
+  }
+  printf("Switched to task: %d Num tasks: %d\n", current_task->id, numtasks());   //printf("Swithing 2\n");
 }
 

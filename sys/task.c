@@ -36,7 +36,7 @@ void enter_user_mode () {
 
 volatile task_t *current_task;
 
-volatile task_t *ready_queue;
+task_t ready_queue[MAX_TASKS];
 
 // Some externs are needed to access members in paging.c...
 extern page_directory_t *kern_pml4e_virt;
@@ -50,32 +50,63 @@ extern void* i_virt_alloc();
 uint32_t next_pid = 1;
 extern page_directory_t* clone_page_directory(page_directory_t* tab_src, int level);
 
+
+task_t* get_next_ready_task() {
+  uint32_t startIdx = (current_task?current_task->index + 1:0);
+   
+  int i = 1;
+  for (i = 0; i < MAX_TASKS; i++) {
+    task_t *task = &ready_queue[startIdx%MAX_TASKS];
+    //printf("Task %d Status %d\n", task->id, task->STATUS);
+    if (task->STATUS == TASK_READY)
+      return task;
+  }
+  printf("\nERR: NO READY TASK\n");
+  while(1);
+}
+
+task_t* get_next_free_task() {
+  int i = 0;
+  for (i = 0; i < MAX_TASKS; i++)
+    if (ready_queue[i].STATUS == TASK_FREE)
+      return ready_queue + i;
+  printf("\nERR: TASK LIMIT EXCEEDED\n");
+  while(1);
+}
+
 void initialize_tasking()
 {
-  /*
-  putc('h');
-   __asm__ __volatile__("cli");
-   __asm__ __volatile__("sti");
-  putc('h');*/
-
-   // Relocate the stack so we know where it is.
-   // Initialise the first task (kernel task)
-   current_task = ready_queue = (task_t*)i_virt_alloc();
+  __asm__ __volatile__("cli");
+   int i = 0;
+   for (i = 0; i < MAX_TASKS; i++)
+     ready_queue[i].index = i;
+   current_task = get_next_free_task();
    current_task->id = next_pid++;
-   current_task->rsp = current_task->rbp = 0;
-   current_task->rip = 0;
+   current_task->rsp  = (uint64_t)i_virt_alloc();
    current_task->pml4e = cur_pml4e_virt;
-   current_task->next = 0;
-   //current_task->tss_rsp = (task_t*)i_virt_alloc();
+   current_task->STATUS = TASK_READY;
 
-   // Reenable interrupts.
+  printf("Setting ltr");
+
+      int a = 0x28;
+               __asm__ __volatile__("movq %0,%%rax;\n"
+                           "ltr (%%rax);"::"r"(&a));
+
+    //int a = 0x2B;
+   //__asm__ __volatile__("movq %0,%%rax;\n");
+   //__asm__ __volatile__("ltr (%%rax);"::"r"(&a));
+
+   //__asm__ __volatile__("movq $0x2B,%rax;");//::"r"(&tem));
+   //__asm__ __volatile__("ltr %rax;");
    printf("Multi task system initialized\n");
+  __asm__ __volatile__("sti");
+
 }
 
 uint32_t getpid() {
   return current_task->id;
 }
-uint64_t temp_rsp;
+volatile uint64_t temp_rsp;
 uint32_t fork()
 {
    // We are modifying kernel structures, and so cannot be interrupted.
@@ -85,23 +116,16 @@ uint32_t fork()
    task_t *parent_task = (task_t*)current_task;
 
    // Create a new process.
-   task_t *new_task = (task_t*)i_virt_alloc(); //kmalloc(sizeof(task_t));
+   task_t *new_task = get_next_free_task();
 
    // Clone the address space.
    new_task->id = next_pid++;
-   new_task->rsp = new_task->rbp = 0;
-   new_task->rip = 0;
-   new_task->next = 0;
+   new_task->rsp =  0;
+   new_task->STATUS = TASK_READY;
 
    // Add it to the end of the ready queue.
    // Find the end of the ready queue...
-   task_t *tmp_task = (task_t*)ready_queue;
-   while (tmp_task->next)
-       tmp_task = tmp_task->next;
-   // ...And extend it.
-   tmp_task->next = new_task;
-        printf("Hi numtasks: %d\n", numtasks());
-        while(1);
+    printf("Hi numtasks: %d\n", numtasks());
 
    //page_directory_t *directory = 
    new_task->pml4e = clone_page_directory(cur_pml4e_virt, 4);
@@ -110,20 +134,28 @@ uint32_t fork()
    // We could be the parent or the child here - check.
    if (current_task == parent_task)
    {
-     printf("In the parent task\n");
-       // We are the parent, so set up the esp/ebp/eip for our child.
+     printf("In the parent task %d\n", current_task->id);
        __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
+      printf("RSP is %x\n", temp_rsp);
+       // We are the parent, so set up the esp/ebp/eip for our child.
        new_task->u_rsp = (uint64_t)i_virt_alloc();
        map_process_specific((uint64_t)new_task->u_rsp, i_virt_to_phy((uint64_t)new_task->u_rsp), new_task->pml4e);
        memcpy((void*)new_task->u_rsp, (void*)temp_rsp, 4096);
-       new_task->u_rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
+       new_task->u_rsp = new_task->u_rsp + 4096 - 1;
 
        new_task->rsp = (uint64_t)i_virt_alloc() ;
        map_process_specific((uint64_t)new_task->rsp, i_virt_to_phy((uint64_t)new_task->rsp), new_task->pml4e);
-       printf("Move the stack temporarily\n");
        new_task->rsp = new_task->rsp + 4096 - 1;
-       current_task->tss_rsp = current_task->rsp;
-        __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
+       new_task->tss_rsp = new_task->rsp;
+
+        __asm__ __volatile__( "movq %0, %%rsp ": : "m"(new_task->rsp) : "memory" );
+        __asm__ __volatile__("pushq $0x23\n\t"
+                       "pushq %0\n\t"
+                       "pushq $0x200292\n\t"
+                       "pushq $0x1b\n\t"
+                       "pushq %1\n\t"
+             : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
+
         __asm__ __volatile__ (
                   "pushq %rax;\n"
                   "pushq %rbx;\n"
@@ -135,24 +167,23 @@ uint32_t fork()
                   "pushq %r9;\n"
                   "pushq %r10;\n"
                   "pushq %r11;\n");
-        __asm__ __volatile__("pushq $0x23\n\t"
-                       "pushq %0\n\t"
-                       "pushq $0x200292\n\t"
-                       "pushq $0x1b\n\t"
-                       "pushq %1\n\t"
-             : :"c"(current_task->u_rsp),"d"((uint64_t)rip) :"memory");
+
+       __asm__ __volatile__("movq %%rsp, %0" : "=r"(new_task->rsp));
 
         __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
 
        __asm__ __volatile__("sti");
+       printf("Set stack for child\n");
        return new_task->id;
    }
    else
    {
      printf("In the child task\n");
        printf("Returning");
+   //    __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
+    //  printf("RSP is %x\n", temp_rsp);
        //__asm__ __volatile__("cli");
-       __asm__ __volatile__("sti");
+       //__asm__ __volatile__("sti");
        // We are the child - by convention return 0.
        printf("Returning");
        return 0;
@@ -160,13 +191,10 @@ uint32_t fork()
 }
 
 int numtasks() {
-  volatile task_t* temp = ready_queue;
-  int num = 0;
-  while(temp) {
-    num++;
-    temp = temp->next;
+  int num = 0, i = 0;
+  for (i = 0; i < MAX_TASKS; i++) {
+    if (ready_queue[i].STATUS != TASK_FREE)
+      num++;
   }
   return num;
 }
-
-

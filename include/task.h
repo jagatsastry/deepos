@@ -3,26 +3,41 @@
 #include <virt_mem.h>
 
 
+#define SCHEDULE_FREQUENCY 1000
+
+#define TASK_FREE  0
+#define TASK_READY 1
+#define TASK_WAITING_ON_PID 2
+#define TASK_SLEEPING 3
+#define TASK_ZOMBIE 3
+
+#define MAX_TASKS 100
 // This structure defines a 'task' - a process.
 typedef struct task
 {
    uint32_t id;                // Process ID.
-   uint64_t rsp, rbp;       // Kernel stack and base pointers.
+   uint32_t index;                // Process ID.
+   uint32_t STATUS;
+   uint32_t sleeping_time;
+   uint32_t waiting_for;
+   uint32_t run_time;
+   uint64_t rsp;       // Kernel stack and base pointers.
    uint64_t tss_rsp;
-   uint64_t u_rsp, u_rbp; //User stack and base pointer
+   uint64_t u_rsp; //User stack and base pointer
+
    uint64_t heap_ptr; //pointer to heap
 
    uint64_t code_start;
    uint64_t code_end; //Where the process image starts and ends
-
-   uint64_t rip;            // Instruction pointer.
-  
+   
    page_directory_t *pml4e; // Page directory.
-   struct task *next;     // The next task in a linked list.
 } task_t;
 
 // Initialises the tasking system.
 void initialize_tasking();
+
+task_t* get_next_ready_task();
+task_t* get_next_free_task();
 
 // Called by the timer hook, this changes the running process.
 void switch_task();

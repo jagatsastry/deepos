@@ -59,13 +59,22 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
   */
 
   //exec("bin/hello");
+  /*
+  uint64_t temp_rsp;
+   __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
+   printf("temprsp: %x\n", temp_rsp);
+   uint64_t xxxx;
+   __asm__ __volatile__("movq %%rsp, %0" : "=r"(xxxx));
+   printf("temprsp: %x\n", xxxx);
+   printf("%x %x\n", &temp_rsp, &xxxx);
+   */
+
   initialize_tasking();
-    exec ("bin/hello");
-    while(1);
   int pid = fork();
+  printf("Forked\n");
   if (pid == 0) {
     printf("Execing");
-    //exec ("bin/hello");
+    exec ("bin/hello");
     printf("Back after exec");
     while(1);
   }
