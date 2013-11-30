@@ -9,6 +9,8 @@
 
 extern void _idt_load(idtPointer *idtPtr);
 extern void _isr0();
+extern void _isr80();
+
 
 extern void timer_phase(void);
 extern void timer_install();
@@ -31,6 +33,7 @@ void install_isrs()
     install_isr(11, (uint64_t)x86_64_isr_vector11);
     install_isr(13, (uint64_t)x86_64_isr_vector13);
     install_isr(14, (uint64_t)x86_64_isr_vector14);
+    install_isr(0x80, (uint64_t)_isr80);
 
     return;
 }
@@ -59,3 +62,6 @@ void idtStart(void) {
   install_isrs();
   install_irqs();
 }
+
+
+

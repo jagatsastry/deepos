@@ -57,11 +57,20 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
   printf("\nBack\n");
   printf("After: %x\n", cpu_read_cr3());
   */
-  exec("bin/hello");
-  while(1);
+
+  //exec("bin/hello");
   initialize_tasking();
-  fork();
+    exec ("bin/hello");
+    while(1);
+  int pid = fork();
+  if (pid == 0) {
+    printf("Execing");
+    //exec ("bin/hello");
+    printf("Back after exec");
+    while(1);
+  }
   printf("Back after a simple switch. Current PID %d\n", getpid());
+  while(1);
   //while(1) { 
   //printf("Back after a simple switch. Current PID %d\n", getpid());
   //};

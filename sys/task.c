@@ -66,6 +66,7 @@ void initialize_tasking()
    current_task->rip = 0;
    current_task->pml4e = cur_pml4e_virt;
    current_task->next = 0;
+   //current_task->tss_rsp = (task_t*)i_virt_alloc();
 
    // Reenable interrupts.
    printf("Multi task system initialized\n");
@@ -74,7 +75,7 @@ void initialize_tasking()
 uint32_t getpid() {
   return current_task->id;
 }
-
+uint64_t temp_rsp;
 uint32_t fork()
 {
    // We are modifying kernel structures, and so cannot be interrupted.
@@ -99,6 +100,8 @@ uint32_t fork()
        tmp_task = tmp_task->next;
    // ...And extend it.
    tmp_task->next = new_task;
+        printf("Hi numtasks: %d\n", numtasks());
+        while(1);
 
    //page_directory_t *directory = 
    new_task->pml4e = clone_page_directory(cur_pml4e_virt, 4);
@@ -109,17 +112,38 @@ uint32_t fork()
    {
      printf("In the parent task\n");
        // We are the parent, so set up the esp/ebp/eip for our child.
-       uint64_t rsp; __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
-       uint64_t rbp; __asm__ __volatile__("movq %%rbp, %0" : "=r"(rbp));
-       uint64_t* new_stack = (uint64_t*)i_virt_alloc();
-       map_process_specific((uint64_t)new_stack, i_virt_to_phy((uint64_t)new_stack), new_task->pml4e);
-       memcpy((void*)new_stack, (void*)rsp, 4096);
-       new_task->rsp = (uint64_t)new_stack;
-       new_task->rbp = rbp;
-       new_task->rip = rip;
-       printf("New tas: rsp %x, rbp %x, rip %x\n", rsp, rbp, rip);
-       printf("New tas: rsp %x, rbp %x, \n", kern_pml4e_virt, cur_pml4e_virt );
-       // All finished: Reenable interrupts.
+       __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
+       new_task->u_rsp = (uint64_t)i_virt_alloc();
+       map_process_specific((uint64_t)new_task->u_rsp, i_virt_to_phy((uint64_t)new_task->u_rsp), new_task->pml4e);
+       memcpy((void*)new_task->u_rsp, (void*)temp_rsp, 4096);
+       new_task->u_rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
+
+       new_task->rsp = (uint64_t)i_virt_alloc() ;
+       map_process_specific((uint64_t)new_task->rsp, i_virt_to_phy((uint64_t)new_task->rsp), new_task->pml4e);
+       printf("Move the stack temporarily\n");
+       new_task->rsp = new_task->rsp + 4096 - 1;
+       current_task->tss_rsp = current_task->rsp;
+        __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
+        __asm__ __volatile__ (
+                  "pushq %rax;\n"
+                  "pushq %rbx;\n"
+                  "pushq %rcx;\n"
+                  "pushq %rdx;\n"
+                  "pushq %rsi;\n"
+                  "pushq %rdi;\n"
+                  "pushq %r8;\n"
+                  "pushq %r9;\n"
+                  "pushq %r10;\n"
+                  "pushq %r11;\n");
+        __asm__ __volatile__("pushq $0x23\n\t"
+                       "pushq %0\n\t"
+                       "pushq $0x200292\n\t"
+                       "pushq $0x1b\n\t"
+                       "pushq %1\n\t"
+             : :"c"(current_task->u_rsp),"d"((uint64_t)rip) :"memory");
+
+        __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
+
        __asm__ __volatile__("sti");
        return new_task->id;
    }
@@ -135,76 +159,14 @@ uint32_t fork()
    }
 }
 
-
-void switch_task()
-{
-   // If we haven't initialised tasking yet, just return.
-   if (!current_task) {
-     printf("Havent initilized yet\n");
-       return;
-   }
-
-  printf("Switching\n");
-  // Read esp, ebp now for saving later on.
-  uint64_t rsp, rbp, rip;
-  __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
-  __asm__ __volatile__("movq %%rbp, %0" : "=r"(rbp));
-  printf("rsp is %x\n", rsp);
-
-   // Read the instruction pointer. We do some cunning logic here:
-   // One of two things could have happened when this function exits -
-   // (a) We called the function and it returned the EIP as requested.
-   // (b) We have just switched tasks, and because the saved EIP is essentially
-   // the instruction after read_eip(), it will seem as if read_eip has just
-   // returned.
-   // In the second case we need to return immediately. To detect it we put a dummy
-   // value in EAX further down at the end of this function. As C returns values in EAX,
-   // it will look like the return value is this dummy value! (0x12345).
-   rip = _read_rip();
-
-   // Have we just switched tasks?
-  printf("Rip is %x\n", rip);
-   if (rip == 0x12345) {
-      __asm__ __volatile__("movq %%rsp, %0" : "=r"(rsp));
-       printf("Rsp now %x\n", rsp);
-       return;
-   }
-
-  // No, we didn't switch tasks. Let's save some register values and switch.
-   current_task->rip = rip;
-   current_task->rsp = rsp;
-   current_task->rbp = rbp;
-    // Get the next task to run.
-   current_task = current_task->next;
-   // If we fell off the end of the linked list start again at the beginning.
-   if (!current_task) current_task = ready_queue;
-   rsp = current_task->rsp;
-   rbp = current_task->rbp;
-   rip = current_task->rip;
-   cur_pml4e_virt = current_task->pml4e;
-   // Here we:
-   // * Stop interrupts so we don't get interrupted.
-   // * Temporarily put the new EIP location in ECX.
-   // * Load the stack and base pointers from the new task struct.
-   // * Change page directory to the physical address (physicalAddr) of the new directory.
-   // * Put a dummy value (0x12345) in EAX so that above we can recognise that we've just
-   // switched task.
-   // * Restart interrupts. The STI instruction has a delay - it doesn't take effect until after
-   // the next instruction.
-   // * Jump to the location in ECX (remember we put the new EIP in there).
-   printf("Setting rsp %x, rip\n", rsp);
-   printf("Swithing 1\n");
-   __asm__ __volatile__(
-     "         \
-     cli;                 \
-     movq %0, %%rcx;       \
-     movq %1, %%rsp;       \
-     movq %2, %%rbp;       \
-     movq %3, %%cr3;       \
-     movq $0x12345, %%rax; \
-     sti;                 \
-     jmpq *%%rcx           "
-     : : "r"(rip), "r"(rsp), "r"(rbp), "r"(i_virt_to_phy((uint64_t)cur_pml4e_virt)));
-   printf("Swithing 2\n");
+int numtasks() {
+  volatile task_t* temp = ready_queue;
+  int num = 0;
+  while(temp) {
+    num++;
+    temp = temp->next;
+  }
+  return num;
 }
+
 

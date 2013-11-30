@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <pic.h>
 #include <defs.h>
+#include <stdio.h>
+#include <pic.h>
+#include <defs.h>
+#include <idt.h>
 
 #define INTERRUPT(vector) \
   __asm__(".global x86_64_isr_vector" #vector "\n"\
@@ -126,6 +130,9 @@ CPU_READ_REG64(cr1) /* static inline uint64_t cpu_read_cr1() */
 CPU_READ_REG64(cr2) /* static inline uint64_t cpu_read_cr2() */
 CPU_READ_REG64(cr3) /* static inline uint64_t cpu_read_cr3() */
 
+CPU_WRITE_REG64(rsp)
+CPU_WRITE_REG64(cr3) /* static inline uint64_t cpu_read_cr3() */
+
 void x86_64_handle_isr_vector13(struct isr_error_stack_frame *stack) {
 
   printf("GENERAL PROTECTION EXCEPTION!\n");
@@ -201,6 +208,109 @@ void x86_64_handle_isr_vector14(struct isr_pf_stack_frame *stack) {
 }
 
 
+
+
+    
+void print( struct regsForPrint *regs)
+{
+    printf("Inside system call for print\n");
+    char *strPtr = (char *)regs->rdx;
+    int len = (int)regs->rcx;
+    for( int i =0; i <len; i++ )
+    {
+           putc(strPtr[i]);
+           //strPtr++;
+    }
+    printf("\nReturn from print"); 
+}
+
+void exitSyscall()
+{
+    printf("Bye\n");
+}
+
+
+void enterToMemory( void *Addr, int typeOfArg)
+{
+     if( typeOfArg == 1)
+     {
+           int *memAddr = (int *)Addr;
+           int buffIndex = 0;
+           int num = 0;
+           while( buffIndex < curBuffIndex )
+           {
+               num = num * 10 + ( buff[ buffIndex ] - '0');
+               buffIndex++;
+           }
+           *memAddr = num;
+     }
+     if( typeOfArg == 2){
+           char *memAddr = (char *)Addr;
+           int buffIndex = 0;
+           *memAddr = buff[buffIndex];
+     }
+     if( typeOfArg == 3){ 
+           char *memAddr = (char *)Addr;
+           int buffIndex = 0;
+           while( buffIndex < curBuffIndex ){//!(buff[ buffIndex ] == 'r')){ 
+              memAddr[buffIndex] = buff[buffIndex]; 
+              buffIndex++;
+           }
+     }
+}
+
+
+void sscanfSystemCall( struct regsForPrint *regs )
+{
+    //const char * formatStr = ( const char *)regs->rdx;
+    //int* memAddr = (int *)regs->rdx;
+    //printf("\nAlok %p",regs->rdx); 
+    //printf("\nAbhishek %p",regs->rcx); 
+    enterPressed = 0;
+    curBuffIndex = 0;
+    //while( !enterPressed);
+    //enterToMemory((void *)memAddr,1);
+
+}
+
+
+uint64_t numSysCalls = 3;
+
+static void *syscalls[3] =
+{
+     print,
+     exitSyscall,
+     sscanfSystemCall
+};
+
+
+void syscall_handler( struct regsForSyscall * s)
+{
+       //printf("SysCall handler begins\n");
+       //printf("\nSyscall no %x",s->rbx);
+       if( s->rbx > numSysCalls )
+         return;
+       //printf("Inside Syscall handler\n");
+       void *location = syscalls[ s->rbx ];
+       //printf("\nInside fault handler Alok\n");
+       //printf("\nrax : %p",s->rax);
+       //printf("\nrbx %p",s->rbx);
+       //printf("\nrcx : %x",s->rcx);
+       //printf("\nrdx %p",s->rdx); 
+  
+      __asm__ __volatile__ ("pushq %1;\
+                              pushq %2;\
+                              pushq %3;\
+                              pushq %4;\
+                              movq %%rsp,%%rdi; \
+                              call *%5;\
+                              popq %%rax;\
+                              popq %%rax;\
+                              popq %%rax;\
+                              popq %%rax;\
+                              " : :"r" (s->rdi), "r" (s->rsi), "r" (s->rdx), "r" (s->rcx), "r" (s->rax),  "r" (location));
+
+}
 
 
 void fault_handler()

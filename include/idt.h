@@ -5,9 +5,20 @@
 #include<defs.h>
 struct regs
 {
-    uint64_t r11, r10, r9, r8, rdi, rsi, rdx, rcx, rax;     
+    uint64_t r11, r10, r9, r8, rdi, rsi, rdx, rcx, rbx ,rax;     
     uint32_t int_no, err_code;   
 };
+
+struct regsForSyscall
+{
+    uint64_t  r11, r10, r9, r8, rdi, rsi, rdx, rcx, rbx,rax ;
+    uint32_t int_no, err_code;
+};
+
+struct regsForPrint{
+    uint64_t rax, rcx, rdx, rsi;
+};
+
 
 typedef struct {
    uint16_t   baseLow;
@@ -31,4 +42,10 @@ void idtStart(void);
 
 void irq_install_handler(int irq, void (*handler)(struct regs *r));
 
+void enterToMemory( void *Addr , int typeOfArg);
+
+
+volatile int enterPressed ;
+volatile int curBuffIndex ;
+char buff[256];
 #endif 

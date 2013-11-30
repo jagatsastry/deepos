@@ -4,6 +4,7 @@
 #include<elf.h>
 #include<phy_mem.h>
 #include<virt_mem.h>
+#include <task.h>
 
 struct Exe_Format exeFormat;
 programHeader pdr;
@@ -104,7 +105,6 @@ void jump_to_start(uint64_t entryAddress) {
 void map_exe_format(){
 
   printf("\nStart Address %x",exeFormat.entryAddr);
-  uint64_t entryAddress = (uint64_t)exeFormat.entryAddr;
   int i =0;
   for (; i<exeFormat.numSegments; i++){
     
@@ -175,26 +175,16 @@ void map_exe_format(){
 	//	printf("\nvadd %x",vadd);
      
     }
-
-
-
-
  }
 
   //moving the instruction pointer
   
   //  __asm__ __volatile__("movq %0,%%rip;"::"g"(entryAddress));
-  jump_to_start(entryAddress);
+ // jump_to_start(entryAddress);
 
 
 }
 
-
-uint64_t get_entry_address(){
-  
-  return exeFormat.entryAddr;
-
-}
 
 
 int atoi(char *str)
@@ -230,16 +220,50 @@ int matchString( char *s , char *t){
   return ret;
 
 }
+extern task_t* current_task;
+extern void* i_virt_alloc();
 
-
+uint64_t temp_rsp;
 int exec(char* filename) {
-  struct  posix_header_ustar *tar_p= get_elf_file(&_binary_tarfs_start, filename);
+  __asm__ __volatile__("cli");
+  struct  posix_header_ustar *tar_p = get_elf_file(&_binary_tarfs_start, filename);
   print_posix_header(tar_p);
   char* x = tar_p->size;
   printf("\n%s\n", x);
   printf("\n%s\n", x);
   printf("hi\n");
   map_exe_format();
+  printf("Preparing the stack\n");
+  __asm__ __volatile__("movq %%rsp, %0;":"=g"(temp_rsp));
+
+  current_task->u_rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
+
+  current_task->rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
+  printf("Move the stack temporarily\n");
+  __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
+  __asm__ __volatile__ (
+
+            "pushq %rax;\n"
+            "pushq %rbx;\n"
+            "pushq %rcx;\n"
+            "pushq %rdx;\n"
+            "pushq %rsi;\n"
+            "pushq %rdi;\n"
+            "pushq %r8;\n"
+            "pushq %r9;\n"
+            "pushq %r10;\n"
+            "pushq %r11;\n");
+  __asm volatile("pushq $0x23\n\t"
+                 "pushq %0\n\t"
+                 "pushq $0x200292\n\t"
+                 "pushq $0x1b\n\t"
+                 "pushq %1\n\t"
+       : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
+    
+  __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
+  printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
+
+  __asm__ __volatile__("sti");
   return 0;
 }
 

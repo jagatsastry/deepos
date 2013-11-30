@@ -5,7 +5,11 @@
 #include<idt.h>
 #include <task.h>
 
-extern task_t* current_task;
+extern volatile task_t* current_task;
+extern volatile task_t* ready_queue;
+
+extern void switch_task();
+
 
 void timer_handler(struct regs *r)
 {
@@ -13,9 +17,10 @@ void timer_handler(struct regs *r)
 
     if (timer_ticks % 18 == 0) {
         print_time(timer_ticks);
+//        printf("Num tasks: %d\n", numtasks());
         if (current_task) {
          // printf("Switching from timer\n");
-        //  switch_task();
+          switch_task();
           //printf("Back from switch task\n");
         }
     }
