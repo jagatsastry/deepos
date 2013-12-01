@@ -1,3 +1,7 @@
 void exit(int status) {
-  while(1);
+     __asm__( "movq $0x01, %%rbx;\
+               movq %0, %%rdx;\
+               int $0x80;\
+               "::"g" (&status):"rbx","rdx") ;
+    return;
 }

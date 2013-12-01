@@ -12,6 +12,7 @@ extern uint64_t i_virt_to_phy(uint64_t virt);
 extern page_directory_t* cur_pml4e_virt;
 extern struct tss_t tss;
 
+#define DEBUG 0
 void update_waiting_and_sleeping_tasks() {
   int i = 0;
   for (i = 0; i < MAX_TASKS; i++) {
@@ -45,7 +46,7 @@ void switch_task()
 {
    // If we haven't initialised tasking yet, just return.
    if (!current_task) {
-     printf("Havent initilized yet\n");
+     if(DEBUG) printf("Havent initilized yet\n");
        return;
    }
   
@@ -56,10 +57,10 @@ void switch_task()
   //You update rsp only when it has passed through the switch task atleast once, or it is the kernel task
   if (current_task->run_time >= SCHEDULE_FREQUENCY || current_task->id == 1)   {
    __asm__ __volatile__("movq %%rsp, %0;":"=g"(current_task->rsp));
-   printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
+   if(DEBUG) printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
   }
-   
-  //printf("Switching\n");
+  int oldPid = current_task->id;  
+  //if(DEBUG) printf("Switching\n");
 
   // Get the next task to run.
   current_task = get_next_ready_task();
@@ -67,17 +68,17 @@ void switch_task()
   uint64_t phy_pml4e = i_virt_to_phy((uint64_t)cur_pml4e_virt);
   // If we fell off the end of the linked list start again at the beginning.
   //When it was interrupted the last time, we stored the position from where we can now pop all the stuff
-
+  printf("Switching from %d to %d\n", oldPid, current_task->id);
   tss.rsp0 = current_task->tss_rsp;
-  printf("Try to switch to process %d\n", current_task->id);
-printf("Setting rsp %x for process %d: %d\n", current_task->rsp, current_task->id, __LINE__);
-//  printf("%x\n", phy_pml4e);
+  if(DEBUG) printf("Try to switch to process %d\n", current_task->id);
+if(DEBUG) printf("Setting rsp %x for process %d: %d\n", current_task->rsp, current_task->id, __LINE__);
+//  if(DEBUG) printf("%x\n", phy_pml4e);
   //cpu_write_cr3(i_virt_to_phy((uint64_t)cur_pml4e_virt));
   __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
 //  cpu_write_rsp(current_task->rsp);
   if (current_task->run_time < SCHEDULE_FREQUENCY && current_task->id != 1)  {
-    printf("Returning now");
+    if(DEBUG) printf("Returning now");
     __asm__ __volatile__(
             "popq %r15;\n"
             "popq %r14;\n"
@@ -98,7 +99,7 @@ printf("Setting rsp %x for process %d: %d\n", current_task->rsp, current_task->i
     port_outb(0xA0, 0x20);
     port_outb(0x20, 0x20);
 
-    printf("Proc: %d . Run session ct: %d. Run time: %d, Schedule freq: %d\n", 
+    if(DEBUG) printf("Proc: %d . Run session ct: %d. Run time: %d, Schedule freq: %d\n", 
         current_task->id, current_task->run_sessions_count,
         current_task->run_time, SCHEDULE_FREQUENCY);
     current_task->run_sessions_count++;
@@ -106,7 +107,7 @@ printf("Setting rsp %x for process %d: %d\n", current_task->rsp, current_task->i
     __asm__ __volatile__("iretq" ::: "memory");
 
   }
-  printf("Switched to task: %d Num tasks: %d\n", current_task->id, numtasks());   //printf("Swithing 2\n");
+  if(DEBUG) printf("Switched to task: %d Num tasks: %d\n", current_task->id, numtasks());   //printf("Swithing 2\n");
   current_task->run_time += SCHEDULE_FREQUENCY;
   current_task->run_sessions_count++;
 }

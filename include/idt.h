@@ -44,10 +44,11 @@ void idtStart(void);
 
 void irq_install_handler(int irq, void (*handler)(struct regs *r));
 
-void enterToMemory( void *Addr , int typeOfArg);
-
+//void enterToMemory( void *Addr , int typeOfArg);
 
 volatile int enterPressed ;
 volatile int curBuffIndex ;
+volatile int *keyPressedPtr;
 char buff[256];
+
 #endif 

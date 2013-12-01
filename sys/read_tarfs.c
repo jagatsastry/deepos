@@ -107,15 +107,17 @@ void map_exe_format(){
   printf("\nStart Address %x",exeFormat.entryAddr);
   int i =0;
   for (; i<exeFormat.numSegments; i++){
+    printf("I :%d\n", i);
     
     struct Exe_Segment segment  = (struct Exe_Segment)exeFormat.segmentList[i];
-    // printf("\n  offset in File :%d",segment.offsetInFile);
-    // printf("\n Segment length File %d",segment.lengthInFile);
-    // printf("\n Segment start Address %x",segment.startAddress);
-    // printf("\n Segment size in Memory %x",segment.sizeInMemory);
-    // printf("\n Segment prot flags %x",segment.protFlags);
-    // printf("\n vAddr %x:",segment.vaddr);
-
+    /*
+     printf("\n  offset in File :%d",segment.offsetInFile);
+     printf("\n Segment length File %d",segment.lengthInFile);
+     printf("\n Segment start Address %x",segment.startAddress);
+     printf("\n Segment size in Memory %x",segment.sizeInMemory);
+     printf("\n Segment prot flags %x",segment.protFlags);
+     printf("\n vAddr %x:",segment.vaddr);
+*/
     uint64_t start = segment.vaddr;
     uint64_t end = segment.vaddr + segment.sizeInMemory;
    
@@ -138,8 +140,8 @@ void map_exe_format(){
       // printf("\nPage Needed :%x",pageNeeded);
    
     }
+    printf("Seg: %d least_start: %x, max_end: %x\n", i, least_start, max_end);
     if(pageNeeded !=0){
-
       
         while(pageNeeded !=0){
 

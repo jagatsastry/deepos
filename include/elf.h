@@ -25,16 +25,30 @@ typedef struct {
  * This describes a single segment of the executable.
  */
 typedef struct {
-  unsigned int type;
-  unsigned int offset;
-  unsigned long vaddr;
-  unsigned long paddr;
-  unsigned long fileSize;
-  unsigned long memSize;
-  unsigned long flags;
-  unsigned long alignment;
-} programHeader;
+  uint32_t type;
+  uint32_t flags;
+  uint64_t offset;
+  //uint64_t idontgiveafuck;
+  uint64_t vaddr;
+  uint64_t paddr;
+  uint64_t fileSize;
+  uint64_t memSize;
+  uint64_t alignment;
+}__attribute__((packed)) programHeader;
 
+/*
+//64 bit type
+typedef struct {
+  uint64_t type;
+  uint64_t flags;
+  uint64_t offset;
+  uint64_t vaddr;
+  uint64_t paddr;
+  uint64_t fileSize;
+  uint64_t memSize;
+  uint64_t alignment;
+} programHeader;
+*/
 /*
  * Bits in flags field of programHeader.
  * These describe memory permissions required by the segment.

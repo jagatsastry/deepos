@@ -86,23 +86,22 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 
   //  printf("\n Phdr address %x ",pdr);
     printf("\n Num Segment of Exe Format : %d", exeFormat->numSegments);
-    /*
       int p1 =0;
  for(;p1< hdr->phnum; p1++){
 
-       printf("\n Segments: %x : %x: %x: %x \n :%x :%x :%x : %x ",phdr[p1].type,phdr[p1].offset,phdr[p1].vaddr,phdr[p1].paddr,phdr[p1].fileSize,phdr[p1].memSize,phdr[p1].flags,phdr[p1].alignment);
+       printf("\n Segments: type %x : offset %x:  vaddr %x: paddr %x \n :filesize %x : memsz %x : flags %x :  alignment %x ",phdr[p1].type,phdr[p1].offset,phdr[p1].vaddr,phdr[p1].paddr,
+        phdr[p1].fileSize,phdr[p1].memSize,phdr[p1].flags,phdr[p1].alignment);
   }
-  */
-  
+ //while(1); 
   for (i = 0; i < hdr->phnum; ++i) {
     struct Exe_Segment *segment = &exeFormat->segmentList[i];
 
     segment->offsetInFile = phdr[i].offset;
     segment->lengthInFile = phdr[i].fileSize;
     segment->sizeInMemory = phdr[i].memSize;
-    segment->vaddr = phdr[i].paddr;
+    segment->vaddr = phdr[i].vaddr;
     printf("Segment: %d, Offset: %x, Length: %x\n",
-          i, segment->sizeInMemory, segment->lengthInFile);
+          i, segment->offsetInFile, segment->lengthInFile);
     printf("sizeInMem: %x, vaddr: %x\n",
           segment->sizeInMemory, segment->vaddr);
     if (segment->lengthInFile > segment->sizeInMemory) {
@@ -110,7 +109,7 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 	                printf
 			  ("Segment %d: length in file (%x) exceeds size in memory (%x)\n",
 			   i, segment->lengthInFile, segment->sizeInMemory);
-      return 1;
+//      return 1;
     }
   }
   return 0;
