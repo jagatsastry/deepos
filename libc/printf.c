@@ -1,3 +1,4 @@
+#include <stdio.h>
 int printf(const char *format, ...) {
        __asm__( "movq $0x00, %%rbx;\
                  movq %0, %%rdx;\

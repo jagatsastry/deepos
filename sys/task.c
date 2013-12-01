@@ -75,6 +75,17 @@ task_t* get_next_free_task() {
   while(1);
 }
 
+task_t* get_task(int pid) {
+  int i;
+  for (i = 0; i < MAX_TASKS; i++) {
+    if (ready_queue[i].id == pid)
+      return ready_queue + i;
+  }
+  //printf("\nERR: Task %d not found\n", pid);
+  //while(1);
+  return 0;
+}
+
 void initialize_tasking()
 {
   //__asm__ __volatile__("cli");
@@ -164,10 +175,15 @@ uint32_t fork()
                   "pushq %rdx;\n"
                   "pushq %rsi;\n"
                   "pushq %rdi;\n"
+                  "pushq %rbp;\n"
                   "pushq %r8;\n"
                   "pushq %r9;\n"
                   "pushq %r10;\n"
-                  "pushq %r11;\n");
+                  "pushq %r11;\n"
+                  "pushq %r12;\n"
+                  "pushq %r13;\n"
+                  "pushq %r14;\n"
+                  "pushq %r15;\n");
 
        __asm__ __volatile__("movq %%rsp, %0" : "=r"(new_task->rsp));
 

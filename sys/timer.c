@@ -4,11 +4,9 @@
 #include<utilities.h>
 #include<idt.h>
 #include <task.h>
+#include <timer.h>
+#include <scheduler.h>
 
-extern volatile task_t* current_task;
-extern volatile task_t* ready_queue;
-
-extern void switch_task();
 
 
 void timer_handler(struct regs *r)
@@ -16,12 +14,16 @@ void timer_handler(struct regs *r)
     static int timer_ticks = 0;
 
     timer_ticks++;
-    if ((timer_ticks-1) % 18 == 0) {
+    if ((timer_ticks-1) % TICK_PER_SECOND == 0) {
         print_time(timer_ticks);
 //        printf("Num tasks: %d\n", numtasks());
         if (current_task) {
          // printf("Switching from timer\n");
-          switch_task();
+          update_waiting_and_sleeping_tasks();
+          //kill_zombies(); //Braiiiiinssss
+          if (current_task->id == 2 && timer_ticks > TICK_PER_SECOND + 2)
+            kexit(30);
+          else switch_task();
           //printf("Back from switch task\n");
         }
     }

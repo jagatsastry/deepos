@@ -220,7 +220,6 @@ int matchString( char *s , char *t){
   return ret;
 
 }
-extern task_t* current_task;
 extern void* i_virt_alloc();
 
 uint64_t temp_rsp;
@@ -250,16 +249,22 @@ int exec(char* filename) {
        : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
   
   __asm__ __volatile__ (
-            "pushq %rax;\n"
-            "pushq %rbx;\n"
-            "pushq %rcx;\n"
-            "pushq %rdx;\n"
-            "pushq %rsi;\n"
-            "pushq %rdi;\n"
-            "pushq %r8;\n"
-            "pushq %r9;\n"
-            "pushq %r10;\n"
-            "pushq %r11;\n");
+                  "pushq %rax;\n"
+                  "pushq %rbx;\n"
+                  "pushq %rcx;\n"
+                  "pushq %rdx;\n"
+                  "pushq %rsi;\n"
+                  "pushq %rdi;\n"
+                  "pushq %rbp;\n"
+                  "pushq %r8;\n"
+                  "pushq %r9;\n"
+                  "pushq %r10;\n"
+                  "pushq %r11;\n"
+                  "pushq %r12;\n"
+                  "pushq %r13;\n"
+                  "pushq %r14;\n"
+                  "pushq %r15;\n");
+
   current_task->run_time = 0; 
  __asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
   printf("Current rsp of process %d: %x line: %d\n", current_task->id, current_task->rsp, __LINE__);
