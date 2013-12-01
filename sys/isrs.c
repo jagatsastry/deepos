@@ -132,6 +132,7 @@ CPU_READ_REG64(cr3) /* static inline uint64_t cpu_read_cr3() */
 
 CPU_WRITE_REG64(rsp)
 CPU_WRITE_REG64(cr3) /* static inline uint64_t cpu_read_cr3() */
+CPU_WRITE_REG64(rcx) /* static inline uint64_t cpu_read_cr3() */
 
 void x86_64_handle_isr_vector13(struct isr_error_stack_frame *stack) {
 

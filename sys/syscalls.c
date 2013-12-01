@@ -19,7 +19,7 @@ void print( struct regsForPrint *regs)
 
 void exitSyscall(struct regsForPrint *regs)
 {
-    kexit(regs->rdx);
+    kexit(*(uint64_t*)regs->rdx);
 }
 
 
@@ -73,22 +73,60 @@ void sscanfSystemCall( struct regsForPrint *regs )
 }
 
 
-uint64_t numSysCalls = 4;
+#define NUM_SYSCALLS  9
 
-static void *syscalls[4] =
+
+extern void cpu_write_rcx();
+
+void sys_sleep(struct regsForPrint * s) {
+  printf("Sleeping for %ds\n", s->rdx);
+  ksleep(*(uint64_t*)s->rdx);
+}
+
+void sys_waitpid(struct regsForPrint * s) {
+  cpu_write_rcx(kwaitpid(*(uint64_t*)s->rdx, *(uint32_t**)s->rsi));
+}
+
+void sys_wait(struct regsForPrint * s) {
+  cpu_write_rcx(kwait(*(uint32_t**)s->rdx));
+}
+
+void sys_fork(struct regsForPrint * s) {
+  uint64_t* rval = (uint64_t*)s->rdx;
+  int ret = fork();
+  *rval = ret;
+}
+
+extern void* i_virt_alloc();
+
+void sys_sbrk(struct regsForPrint * s) {
+  uint64_t addr = (uint64_t)i_virt_alloc();
+  *(uint64_t*)s->rdx = addr;
+}
+
+void sys_execvpe(struct regsForPrint * s) {
+  cpu_write_rcx(exec(*(char**)s->rdx));
+}
+
+static void *syscalls[10] =
 {
      print,
      exitSyscall,
      sscanfSystemCall,
-     enterToMemory
+     enterToMemory,
+     sys_fork,
+     sys_execvpe,
+     sys_sleep,
+     sys_wait,
+     sys_waitpid,
+     sys_sbrk
 };
-
 
 void syscall_handler( struct regsForSyscall * s)
 {
        //printf("SysCall handler begins\n");
        //printf("\nSyscall no %x",s->rbx);
-       if( s->rbx > numSysCalls )
+       if( s->rbx > NUM_SYSCALLS )
          return;
        //printf("Inside Syscall handler\n");
        void *location = syscalls[ s->rbx ];
@@ -108,7 +146,7 @@ void syscall_handler( struct regsForSyscall * s)
                               popq %%rax;\
                               popq %%rax;\
                               popq %%rax;\
-                              " : :"r" (s->rdi), "r" (s->rsi), "r" (s->rdx), "r" (s->rcx), "r" (s->rax),  "r" (location));
+                              " : :"r" (s->rdi), "r" (s->rsi), "r" (s->rdx), "r" (s->rcx), "r" (s->rax),  "r" (location): "rcx");
 
 }
 

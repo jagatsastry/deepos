@@ -13,5 +13,5 @@ void ksleep(uint32_t time) {
   //When we return from switch_task after a switch, we unset the RIP, so we know that it is a jump from timer.
   printf("%d sleeping for %d seconds\n", current_task->id, time);
   switch_task();
-  printf("Back from sleep. pid: %d\n", current_task->id);
+  printf("I am back from sleep. pid: %d\n", current_task->id);
 }

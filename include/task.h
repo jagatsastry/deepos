@@ -1,6 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 #include <virt_mem.h>
+#include <stdlib.h>
 
 
 #define SCHEDULE_FREQUENCY 1000
@@ -54,15 +55,11 @@ void switch_task();
 
 // Forks the current process, spawning a new one with a different
 // memory space.
-uint32_t fork();
 
 // Causes the current process' stack to be forcibly moved to a new location.
 void move_stack(void *new_stack_start, uint32_t size);
 
 // Returns the pid of the current process.
-uint32_t getpid();
-
-int numtasks();
 
 void kexit(int status);
 void ksleep(uint32_t time);
