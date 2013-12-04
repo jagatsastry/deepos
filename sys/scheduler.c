@@ -25,11 +25,19 @@ void update_waiting_and_sleeping_tasks() {
       }
     }
     if (task->STATUS == TASK_WAITING_ON_PID) {
-      task_t *wait_task = get_task(task->pid_waiting_for);
+      task_t *wait_task = (task_t*)0;
+      if (task->pid_waiting_for == -1) {
+        task_t *wait_task = get_children(task->id);
+        while(wait_task && wait_task->STATUS != TASK_ZOMBIE) 
+          wait_task = wait_task->next;
+      }
+      else 
+        wait_task = get_task(task->pid_waiting_for);
       //if (!wait_task)
       //  task->STATUS == TASK_READY;
       //Once a zombie, always a zombie. Kill them later
-      if (wait_task->STATUS == TASK_ZOMBIE) {
+      if ( wait_task && wait_task->STATUS == TASK_ZOMBIE) {
+        task->pid_waiting_for = wait_task->id;
         task->STATUS = TASK_READY;
         task->waiting_pid_exit_status = wait_task->exit_status;
 
@@ -41,6 +49,7 @@ void update_waiting_and_sleeping_tasks() {
   }
 }
 
+extern void print_current_task();
 //void store_trap_frame() {
 void switch_task()
 {
@@ -64,6 +73,8 @@ void switch_task()
 
   // Get the next task to run.
   current_task = get_next_ready_task();
+
+  print_current_task();
   cur_pml4e_virt = current_task->pml4e;
   uint64_t phy_pml4e = i_virt_to_phy((uint64_t)cur_pml4e_virt);
   // If we fell off the end of the linked list start again at the beginning.

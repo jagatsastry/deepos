@@ -84,17 +84,18 @@ void sys_sleep(struct regsForPrint * s) {
 }
 
 void sys_waitpid(struct regsForPrint * s) {
-  cpu_write_rcx(kwaitpid(*(uint64_t*)s->rdx, *(uint32_t**)s->rsi));
+  pid_t pid = (pid_t)s->rdx;
+  pid_t *retPid = (uint32_t*)s->rsi;
+  uint32_t *status =  *(uint32_t**)s->rcx;
+  *retPid = kwaitpid(pid, status);
 }
 
-void sys_wait(struct regsForPrint * s) {
-  cpu_write_rcx(kwait(*(uint32_t**)s->rdx));
-}
 
 void sys_fork(struct regsForPrint * s) {
   uint64_t* rval = (uint64_t*)s->rdx;
   int ret = fork();
   *rval = ret;
+  printf("Returning from fork\n");
 }
 
 extern void* i_virt_alloc();
@@ -102,6 +103,10 @@ extern void* i_virt_alloc();
 void sys_sbrk(struct regsForPrint * s) {
   uint64_t addr = (uint64_t)i_virt_alloc();
   *(uint64_t*)s->rdx = addr;
+}
+
+void sys_getpid(struct regsForPrint * s) {
+  *(uint64_t*)s->rdx = current_task->id;
 }
 
 void sys_execvpe(struct regsForPrint * s) {
@@ -117,9 +122,9 @@ static void *syscalls[10] =
      sys_fork,
      sys_execvpe,
      sys_sleep,
-     sys_wait,
      sys_waitpid,
-     sys_sbrk
+     sys_sbrk,
+     sys_getpid
 };
 
 void syscall_handler( struct regsForSyscall * s)

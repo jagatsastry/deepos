@@ -1,4 +1,5 @@
 #include <defs.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 uint32_t fork() {
@@ -14,9 +15,14 @@ uint32_t fork() {
                int $0x80;\
                "::"g" (&ret):"rbx","rdx", "memory") ;
    if (ret == 0) {
+     printf("In child fork\n");
      __asm__ __volatile__( "movq %0, %%rsp ": : "m"((uint64_t)stack_copy) : "memory" );
    } else {
+     printf("In parent fork\n");
      __asm__ __volatile__( "movq %0, %%rsp ": : "m"(rsp) : "memory" );
    }
+   pid_t p = getpid();
+   printf("Returning from fork. Ret %d Current pid %d\n", ret, p);
+   while(1);
    return ret;
 }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 
+
 #define SCHEDULE_FREQUENCY 1000
 
 #define TASK_FREE  0
@@ -18,7 +19,7 @@
 typedef struct task
 {
    struct task* parent;
-   uint32_t id;                // Process ID.
+   pid_t id;                // Process ID.
    uint16_t index;                // Process ID.
    uint32_t exit_status;
    uint32_t waiting_pid_exit_status;
@@ -38,6 +39,7 @@ typedef struct task
    uint64_t code_end; //Where the process image starts and ends
    
    page_directory_t *pml4e; // Page directory.
+   struct task *next;  //To be used in a linked list
 } task_t;
 
 extern volatile task_t *current_task;
@@ -48,7 +50,8 @@ void initialize_tasking();
 
 task_t* get_next_ready_task();
 task_t* get_next_free_task();
-task_t* get_task(int pid) ;
+task_t* get_task(pid_t pid) ;
+task_t* get_children(pid_t pid);
 // Called by the timer hook, this changes the running process.
 void switch_task();
 

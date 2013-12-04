@@ -17,5 +17,6 @@ typedef __uint16_t uint16_t;
 typedef unsigned char uint08_t;
 typedef uint08_t uint8_t;
 typedef uint8_t BOOL;
+typedef uint32_t pid_t;
 
 #endif

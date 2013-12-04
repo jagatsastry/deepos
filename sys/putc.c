@@ -59,9 +59,9 @@ void scroll()
     int i ;
         unsigned blank; 
     blank = 0x20 | (attrib << 8);    
-        if( y_cord > 23)
+        if( y_cord > 22)
     {
-          for( i = 0; i < 23 * 80; i++)
+          for( i = 0; i < 22 * 80; i++)
           {
              *testMPtr = *(testMPtr + 80);     
                   testMPtr++; 
@@ -72,6 +72,6 @@ void scroll()
           } 
 
                  x_cord = 0;
-          y_cord = 23;  
+          y_cord = 22;  
     }
 }

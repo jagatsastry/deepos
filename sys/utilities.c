@@ -1,5 +1,6 @@
 #include<string.h>
 #include<stdio.h>
+#include <task.h>
 
 extern volatile uint64_t vga_virt_addr;
 
@@ -67,4 +68,21 @@ void print_time(int millis)
     char* sec = lpad(itoa(secInt));
     for( i = 0; sec[i]; i++, j++) 
         scrnLocPtr[j*2] = sec[i];
+}
+
+void print_current_task()
+{
+    char* preamble = "pid: ";
+    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 24 * 80 * 2) + 2);
+    
+    int i = 0, j = 0;
+
+    for( i = 0; preamble[i]; i++, j++) 
+        scrnLocPtr[j*2] = preamble[i];
+
+    char *pid = itoa(current_task->id);
+    i = 0;
+    while(pid[i]) {
+        scrnLocPtr[j++*2] = pid[i++];
+    }
 }

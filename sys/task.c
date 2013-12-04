@@ -75,7 +75,22 @@ task_t* get_next_free_task() {
   while(1);
 }
 
-task_t* get_task(int pid) {
+task_t* get_children(pid_t pid) {
+  task_t *children = (task_t*)0;
+  int i;
+  printf("Searching for children\n");
+  for (i = 0; i < MAX_TASKS; i++) {
+    if (ready_queue[i].parent && ready_queue[i].parent->id == pid) {
+      printf("Found a parent %d", i);
+      task_t* child =  ready_queue + i;
+      child->next = children;
+      children = child;
+    }
+  }
+  return children;
+}
+
+task_t* get_task(pid_t pid) {
   int i;
   for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].id == pid)
@@ -159,6 +174,7 @@ uint32_t fork()
        map_process_specific((uint64_t)new_task->rsp, i_virt_to_phy((uint64_t)new_task->rsp), new_task->pml4e);
        new_task->rsp = new_task->rsp + 4096 - 1;
        new_task->tss_rsp = new_task->rsp;
+       new_task->parent = (task_t*)current_task;
 
         __asm__ __volatile__( "movq %0, %%rsp ": : "m"(new_task->rsp) : "memory" );
         __asm__ __volatile__("pushq $0x23\n\t"
