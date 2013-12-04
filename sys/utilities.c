@@ -90,3 +90,17 @@ void print_current_task()
     i = 0;
     while((scrnLocPtr[j++*2] = numTask[i++]));
 }
+
+uint64_t oct_to_dec(char* oct) {
+  uint64_t ret = 0;
+  uint64_t base = 1;
+  int i =11;
+  while (oct[i] <= '0' || oct[i] > '9')
+    i--;
+  for(;i >= 0 ;i--) {
+    ret += base*(oct[i] - '0');
+    base *= 8;
+  }
+  return ret;
+}
+

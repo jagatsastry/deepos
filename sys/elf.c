@@ -100,7 +100,7 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
     segment->lengthInFile = phdr[i].fileSize;
     segment->sizeInMemory = phdr[i].memSize;
     segment->vaddr = phdr[i].vaddr;
-    printf("Segment: %d, Offset: %x, Length: %x\n",
+    printf("\nSegment: %d, Offset: %x, Length: %x\n",
           i, segment->offsetInFile, segment->lengthInFile);
     printf("sizeInMem: %x, vaddr: %x\n",
           segment->sizeInMemory, segment->vaddr);

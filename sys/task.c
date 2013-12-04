@@ -133,8 +133,9 @@ void initialize_tasking()
 uint32_t getpid() {
   return current_task->id;
 }
+
 volatile uint64_t temp_rsp;
-uint32_t fork()
+uint32_t fork_wrapper(int kernel)
 {
    // We are modifying kernel structures, and so cannot be interrupted.
    //__asm__ __volatile__("cli");
@@ -177,12 +178,31 @@ uint32_t fork()
        new_task->parent = (task_t*)current_task;
 
         __asm__ __volatile__( "movq %0, %%rsp ": : "m"(new_task->rsp) : "memory" );
+/*
         __asm__ __volatile__("pushq $0x23\n\t"
                        "pushq %0\n\t"
                        "pushq $0x200292\n\t"
                        "pushq $0x1b\n\t"
                        "pushq %1\n\t"
              : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
+
+*/
+  /*if (kernel) {
+  __asm volatile("pushq $0x20\n\t"
+                 "pushq %0\n\t"
+                 "pushq $0x200292\n\t"
+                 "pushq $0x08\n\t"
+                 "pushq %1\n\t"
+       : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
+  } else {*/
+  __asm volatile("pushq $0x23\n\t"
+                 "pushq %0\n\t"
+                 "pushq $0x200292\n\t"
+                 "pushq $0x1b\n\t"
+                 "pushq %1\n\t"
+       : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
+//  }
+
 
         __asm__ __volatile__ (
                   "pushq %rax;\n"
@@ -231,4 +251,8 @@ pid_t numtasks() {
       num++;
   }
   return num;
+}
+
+uint32_t fork() {
+  return fork_wrapper(0);
 }

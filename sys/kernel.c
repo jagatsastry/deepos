@@ -19,8 +19,11 @@ extern struct page_directory_t *cur_pml4e_virt;
 extern uint64_t cpu_read_cr3();
 
 extern uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e);
+extern int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int kernel);
   
 extern int exec(char*);
+extern uint32_t fork_wrapper(int kernel);
+
 void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
   if(ENABLE_INTR) {
     init_pics();
@@ -70,11 +73,12 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
    */
 
   initialize_tasking();
-  int pid = fork();
+  int pid = fork_wrapper(1);
   printf("Forked\n");
   if (pid == 0) {
     printf("Execing");
-    exec ("bin/hello");
+    char *argv[] = {(char*)NULL};
+    kexecvpe_wrapper("bin/hello", 0, argv, argv, 1);
     printf("Back after exec");
     while(1);
   }

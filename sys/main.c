@@ -11,6 +11,7 @@ extern void enter_user_mode();
 uint64_t vga_phy_addr;
 volatile uint64_t vga_virt_addr;
 
+
 void start(uint32_t* modulep, void* kernmem_addr, void* physbase, void* physfree)
 {
 
@@ -51,7 +52,7 @@ void boot(void)
 	);
 	reload_gdt();
 	setup_tss();
-
+  printf("%d", sizeof(tss));
 
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),

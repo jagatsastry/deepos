@@ -23,11 +23,11 @@ struct posix_header_ustar {
 	char devminor[8];
 	char prefix[155];
 	char pad[12];
-};
+} __attribute__ ((packed));
 
 void print_posix_header( struct posix_header_ustar * );
 
-struct posix_header_ustar* get_elf_file(char *, char*);
+struct posix_header_ustar* get_elf_file(char*);
 
 int matchString( char * , char *);
 

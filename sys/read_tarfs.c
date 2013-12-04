@@ -14,8 +14,9 @@ uint64_t elf_start;
 void print_posix_header( struct posix_header_ustar *p){
 
   printf("Tarfs header\n");
-  printf("Name: %s, Mode: %s, Uid: %s\nGid: %s, Size: %s, Typeflag: %s\n", 
-        p->name, p->mode, p->uid, p->gid, p->size, p->typeflag);
+  printf("Name: %s, Mode: %s, Uid: %s\n",  p->name, p->mode, p->uid);
+  printf("Gid: %s, Size: %s, Typeflag: %s\n", 
+         p->gid, p->size, p->typeflag);
 
   //  printf("\n Posix header :  %s :%s :%s ",p->name,p->size,p->typeflag);
 
@@ -23,80 +24,37 @@ void print_posix_header( struct posix_header_ustar *p){
 
 
 
-struct posix_header_ustar* get_elf_file(char *binary_tarfs_start, char* filename) {
+extern uint64_t oct_to_dec(char *oct);
+extern char _binary_tarfs_start, _binary_tarfs_end;
 
+struct posix_header_ustar* get_elf_file(char* filename) {
 
-  // printf("\n  %p",binary_tarfs_start);
+  char* header =  (char*)(&_binary_tarfs_start);
+  char *end =  (char*)(&_binary_tarfs_end);
 
-
-
- struct  posix_header_ustar *tar_p=(struct posix_header_ustar *)(binary_tarfs_start);
- print_posix_header(tar_p);
-
-  char *z = tar_p->size;
-
-   printf("\n size in %d",atoi(z));
- 
-
-
-//char *c = binary_tarfs_start;
-//char *p = "bin";
-
-//printf("\n string match %d: ",matchString( p , temp));
-// printf("\n %s",temp);
-   char *temp = binary_tarfs_start;
-  
-   while(matchString(tar_p->name,filename)!=0){
-
-     temp = temp + 512  + atoi(tar_p->size);
-        tar_p=(struct posix_header_ustar *)temp;
-		print_posix_header(tar_p);
-
- }
- printf("Matched! %s\n", tar_p->name);
-     temp = temp+ 512;
-   //   printf("\n temp address %p",temp);
-
-
-   // printf("\n size : %d",atoi(tar_p->size) );
-     //   printf("\n Header:");
-
-
-
-     elf_start = (uint64_t) temp; 
-     int x = Parse_ELF_Executable((char*)temp, atoi(tar_p->size),&exeFormat,&pdr);
-     printf("Status: %d\n", x);
-     //     printf("\n temp: %x",temp);
-         //printf("\n exe format :%d\n", exitStatus);
-
-
-    // printf("\n Num Segemts: %d , Entry address : %p", exeFormat.numSegments, exeFormat.entryAddr);
-
-    
-    // printf("\n Phdr address %x ",&pdr);
-
-    //   print_exe_format(&exeFormat);
-  
-    //print_p_format(&exeFormat,&pdr);
-
-
-   return tar_p;
-
-  /*
-
-c =c+512;
-struct  posix_header_ustar *tar_p1=(struct posix_header_ustar *)(c);
-print_posix_header(tar_p1);
-c= c+512;
-struct  posix_header_ustar *tar_p2=(struct posix_header_ustar *)(c);
-print_posix_header(tar_p2);
-c =c+512;
-char * p1 =c;
-for ( ; p1<c+200;p1++){
-  printf("%c",*p1);
- }
-  */
+// while(header < (struct posix_header_ustar*)(&_binary_tarfs_end))
+  struct posix_header_ustar * h = (struct posix_header_ustar*)header;
+   while(header < end && matchString(h->name, filename) != 0) {
+    int sz = oct_to_dec(h->size);
+    printf("Name: %s Size: %d Cur: %p\n", h->name, sz, h);
+    int jump = (sizeof(struct posix_header_ustar) + sz);
+    if (jump % 512 != 0)
+      jump += (512 - jump % 512);
+    header = header + jump;
+    h = (struct posix_header_ustar*)header;
    }
+   if (header >= end) {
+    printf("ERROR: %s not found in tarfs\n");
+    return NULL;
+   }
+   h++;
+  
+   elf_start = (uint64_t) h; 
+   int x = Parse_ELF_Executable((char*)h, oct_to_dec((h-1)->size),&exeFormat,&pdr);
+   printf("Status: %d\n", x);
+
+   return h;
+}
 
 void jump_to_start(uint64_t entryAddress) {
   __asm__ __volatile__("jmp %0"::"r"(entryAddress));
@@ -189,20 +147,6 @@ void map_exe_format(){
 
 
 
-int atoi(char *str)
-{
-  int res = 0; // Initialize result
- 
-  // Iterate through all characters of input string and update result
-  for (int i = 0; str[i] != '\0'; ++i)
-    res = res*10 + str[i] - '0';
- 
-  // return result.
-  return res;
-}
-
-
-
 int matchString( char *s , char *t){
 
   int ret = 0;
@@ -225,9 +169,12 @@ int matchString( char *s , char *t){
 extern void* i_virt_alloc();
 
 uint64_t temp_rsp;
-int exec(char* filename) {
+int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int kernel) {
+  printf("Running kexecvpe of %s\n", filename);
   //__asm__ __volatile__("cli");
-  struct  posix_header_ustar *tar_p = get_elf_file(&_binary_tarfs_start, filename);
+  struct  posix_header_ustar *tar_p = get_elf_file(filename);
+  if (tar_p == NULL)
+    return -1;
   print_posix_header(tar_p);
   char* x = tar_p->size;
   printf("\n%s\n", x);
@@ -243,12 +190,24 @@ int exec(char* filename) {
   current_task->tss_rsp = (uint64_t)current_task->rsp;
   printf("Move the stack temporarily\n");
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
+
+  /*if (kernel) {
+  __asm volatile("pushq $0x20\n\t"
+                 "pushq %0\n\t"
+                 "pushq $0x200292\n\t"
+                 "pushq $0x08\n\t"
+                 "pushq %1\n\t"
+       : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
+  } else {*/
   __asm volatile("pushq $0x23\n\t"
                  "pushq %0\n\t"
                  "pushq $0x200292\n\t"
                  "pushq $0x1b\n\t"
                  "pushq %1\n\t"
        : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
+  //}
+
+
   
   __asm__ __volatile__ (
                   "pushq %rax;\n"
@@ -266,14 +225,19 @@ int exec(char* filename) {
                   "pushq %r13;\n"
                   "pushq %r14;\n"
                   "pushq %r15;\n");
-
   current_task->run_time = 0; 
  __asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
   printf("Current rsp of process %d: %x line: %d\n", current_task->id, current_task->rsp, __LINE__);
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
   printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
-
+  //switch_task();
+  //__asm__ __volatile__ ("iretq":::"memory");
  // __asm__ __volatile__("sti");
   return 0;
 }
+
+int kexecvpe(char* filename, int argc, char *argv[], char *argp[]) {
+  return kexecvpe_wrapper(filename, argc, argv, argp, 0);
+}
+
 

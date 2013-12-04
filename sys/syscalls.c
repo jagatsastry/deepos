@@ -73,7 +73,6 @@ void sscanfSystemCall( struct regsForPrint *regs )
 }
 
 
-#define NUM_SYSCALLS  10
 
 
 extern void cpu_write_rcx();
@@ -110,10 +109,20 @@ void sys_getpid(struct regsForPrint * s) {
 }
 
 void sys_execvpe(struct regsForPrint * s) {
-  cpu_write_rcx(exec(*(char**)s->rdx));
+  char *filename = (char*)s->rdx;
+  char **argv = (char**)s->rcx;
+  char **argp = (char**)s->rsi;
+  int *ret = (int*)s->rsi;
+
+  printf("syscall: Running execvpe of %s\n", filename);
+  int argc = 0;
+  for(; argv[argc]; argc++);
+
+  *ret = kexecvpe(filename, argc, argv, argp);
 }
 
-static void *syscalls[10] =
+#define NUM_SYSCALLS  11
+static void *syscalls[11] =
 {
      print,
      exitSyscall,

@@ -54,4 +54,5 @@ void map_process_specific(uint64_t, uint64_t, page_directory_t *);
 //void map(uint64_t, uint64_t);
 void identity_mapping();
 
+void* i_virt_alloc();
 #endif

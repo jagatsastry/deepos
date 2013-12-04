@@ -33,7 +33,6 @@ kernel: $(patsubst %.s,obj/%.asm.o,$(KERN_SRCS:%.c=obj/%.o)) obj/tarfs.o
 obj/tarfs.o: $(BINS)
 	tar --format=ustar -cvf tarfs --no-recursion -C $(ROOTFS) $(shell find $(ROOTFS)/ -name boot -prune -o ! -name .empty -printf "%P\n")
 	objcopy --input binary --binary-architecture i386 --output elf64-x86-64 tarfs $@
-	@rm tarfs
 
 $(ROOTLIB)/libc.a: $(LIBC_SRCS:%.c=obj/%.o)
 	$(AR) rcs $@ $^

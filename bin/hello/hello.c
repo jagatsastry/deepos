@@ -14,6 +14,10 @@ int main(int argc, char* argv[]) {
     printf("Waiting for child %d\n", pid);
     int pid1 = waitpid(pid, &status, 0);
     printf("Child %d supposedly exited with status %d\n", pid1, status);
+  } else {
+    printf("Execing WHATEVER\n");
+    exec("bin/whatever");
+    printf("Back from exec. SHOULDNT HAVE\n");
   }
   //printf("Forking a new process in %d\n", getpid());
   //int p1 = fork();
