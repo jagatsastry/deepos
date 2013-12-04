@@ -4,7 +4,6 @@
 #include <defs.h>
 
 int scanf( const char *format, ...){
-  printf("In scanf 1");
      va_list argp;
        va_start( argp, format );
        //int numCharactersRead = 0;
@@ -12,12 +11,7 @@ int scanf( const char *format, ...){
        int *intPtr ;
        char *cptr;
        volatile int keyPressed = 0;
-  printf("In scanf 2");
-  uint64_t x = (uint64_t)&keyPressed;
-       printf("Value of keypressed ptr is %p",x);
-  printf("In scanf 3");
        char printChar[2];
-  printf("In scanf 4");
        while( *format != '\0' ){
            keyPressed = 0;
            switch( *format ){

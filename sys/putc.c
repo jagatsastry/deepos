@@ -5,6 +5,7 @@ extern volatile uint64_t vga_virt_addr;
 int x_cord = 0, y_cord = 0;
 
 void scroll();
+void update_cursor(int row, int col);
 
 void putc( char c )
 {
@@ -49,8 +50,20 @@ void putc( char c )
    } 
    
    scroll(); 
+   update_cursor(y_cord, x_cord);
 }
-
+extern void port_outb(uint16_t port, uint08_t data) ;
+ void update_cursor(int row, int col)
+ {
+    unsigned short position=(row*80) + col;
+ 
+    // cursor LOW port to vga INDEX register
+    port_outb(0x3D4, 0x0F);
+    port_outb(0x3D5, (unsigned char)(position&0xFF));
+    // cursor HIGH port to vga INDEX register
+    port_outb(0x3D4, 0x0E);
+    port_outb(0x3D5, (unsigned char )((position>>8)&0xFF));
+ }
 
 void scroll()
 {

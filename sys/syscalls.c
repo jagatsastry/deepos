@@ -92,7 +92,7 @@ void sys_waitpid(struct regsForPrint * s) {
 
 void sys_fork(struct regsForPrint * s) {
   uint64_t* rval = (uint64_t*)s->rdx;
-  int ret = fork();
+  int ret = kfork();
   *rval = ret;
   printf("Returning from fork\n");
 }

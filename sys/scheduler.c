@@ -71,7 +71,7 @@ void switch_task()
    if(DEBUG) printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
   }
   int oldPid = current_task->id;  
-  //if(DEBUG) printf("Switching\n");
+  if(DEBUG) printf("Switching\n");
 
   // Get the next task to run.
   current_task = get_next_ready_task();
@@ -81,7 +81,8 @@ void switch_task()
   uint64_t phy_pml4e = i_virt_to_phy((uint64_t)cur_pml4e_virt);
   // If we fell off the end of the linked list start again at the beginning.
   //When it was interrupted the last time, we stored the position from where we can now pop all the stuff
-  printf("Switching from %d to %d\n", oldPid, current_task->id);
+  //if (oldPid != current_task->id)
+  if (DEBUG) printf("Switching from %d to %d\n", oldPid, current_task->id);
   tss.rsp0 = current_task->tss_rsp;
   if(DEBUG) printf("Try to switch to process %d\n", current_task->id);
 if(DEBUG) printf("Setting rsp %x for process %d: %d\n", current_task->rsp, current_task->id, __LINE__);

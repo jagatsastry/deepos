@@ -6,7 +6,7 @@
 #include<stdio.h>
 #include<pic.h>
 
-inline void port_outb(uint16_t port, uint08_t data) {
+void port_outb(uint16_t port, uint08_t data) {
     __asm__ __volatile( "outb %0, %1;"
                     : /* void */
                     : "a" (data), "d" (port));

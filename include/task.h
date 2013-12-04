@@ -69,5 +69,6 @@ void ksleep(uint32_t time);
 uint32_t kwaitpid(uint32_t pid, uint32_t *status);
 uint32_t kwait(uint32_t *status);
 int kexecvpe(char *filename, int argc, char *argv[], char *envp[]);
+uint32_t kfork();
 
 #endif
