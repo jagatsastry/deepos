@@ -4,6 +4,7 @@
 int main(int argc, char* argv[]) {
   printf("*********Sleeping********\n");
   sleep(1);
+  printf("Back from sleeping: PID %d\n", getpid());
   pid_t id = getpid();
   
   printf("HAHAHA PID: %d\n", id);
@@ -11,11 +12,14 @@ int main(int argc, char* argv[]) {
   if (pid != 0) {
     uint32_t status;
     printf("Waiting for child %d\n", pid);
-    int pid1 = wait(&status);
+    int pid1 = waitpid(pid, &status, 0);
     printf("Child %d supposedly exited with status %d\n", pid1, status);
   }
-
-  printf("Back from sleeping: PID %d\n", getpid());
+  //printf("Forking a new process in %d\n", getpid());
+  //int p1 = fork();
+  //printf("%d is back in hello. Fork returned %d!\n", getpid(), p1);
+  printf("%d is back in hello. !\n", getpid());
+  
   //printf("Back from stuff\n");
   //while(1);
   //printf("Enter stuff\n");

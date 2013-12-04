@@ -224,10 +224,10 @@ printf("Updated rsp for %d to %x: %d\n", new_task->id, new_task->rsp, __LINE__);
    }
 }
 
-int numtasks() {
-  int num = 0, i = 0;
+pid_t numtasks() {
+  pid_t num = 0, i = 0;
   for (i = 0; i < MAX_TASKS; i++) {
-    if (ready_queue[i].STATUS != TASK_FREE)
+    if (ready_queue[i].STATUS != TASK_FREE && ready_queue[i].STATUS != TASK_ZOMBIE)
       num++;
   }
   return num;

@@ -72,17 +72,21 @@ void print_time(int millis)
 
 void print_current_task()
 {
-    char* preamble = "pid: ";
+    char* preamble = "PID: ";
     unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 24 * 80 * 2) + 2);
     
     int i = 0, j = 0;
 
     for( i = 0; preamble[i]; i++, j++) 
         scrnLocPtr[j*2] = preamble[i];
-
     char *pid = itoa(current_task->id);
     i = 0;
-    while(pid[i]) {
-        scrnLocPtr[j++*2] = pid[i++];
-    }
+    while((scrnLocPtr[j++*2] = pid[i++]));
+
+    char *totProcStr = " Tot proc: ";
+    for( i = 0; totProcStr[i]; i++, j++) 
+        scrnLocPtr[j*2] = totProcStr[i];
+    char *numTask = itoa(numtasks());
+    i = 0;
+    while((scrnLocPtr[j++*2] = numTask[i++]));
 }
