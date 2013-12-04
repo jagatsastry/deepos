@@ -12,9 +12,9 @@ pid_t kwaitpid(pid_t pid, uint32_t *status) {
   //When we return from switch_task after a switch, we unset the RIP, so we know that it is a jump from timer.
   printf("%d waiting on %d\n", current_task->id, (int)pid);
   switch_task();
-  *status = get_task(pid)->waiting_pid_exit_status;
+  *status = current_task->waiting_pid_exit_status;
   pid = current_task->pid_waiting_for;
-  printf("%d done waiting on %d\n", current_task->id, pid);
+  printf("%d done waiting on %d. Exited with status %d\n", current_task->id, pid, *status);
   return pid;
 }
 

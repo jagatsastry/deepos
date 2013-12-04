@@ -14,13 +14,13 @@ int main(int argc, char* argv[]) {
     int pid1 = wait(&status);
     printf("Child %d supposedly exited with status %d\n", pid1, status);
   }
-  printf("Back from sleeping: PID %d\n", pid);
+
+  printf("Back from sleeping: PID %d\n", getpid());
   //printf("Back from stuff\n");
   //while(1);
   //printf("Enter stuff\n");
   //char stuff[10];
   //scanf("%s", stuff);
 	//printf("Hello %s!\n", stuff);
-  printf(" 1 Back from sleeping: PID %d\n", pid);
   exit(1);
 }

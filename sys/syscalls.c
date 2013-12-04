@@ -73,7 +73,7 @@ void sscanfSystemCall( struct regsForPrint *regs )
 }
 
 
-#define NUM_SYSCALLS  9
+#define NUM_SYSCALLS  10
 
 
 extern void cpu_write_rcx();
