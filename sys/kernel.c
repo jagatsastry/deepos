@@ -13,6 +13,7 @@ void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physf
 extern page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) ;
 
 extern uint64_t i_virt_to_phy(uint64_t virt);
+extern void  create_shell();
   
 extern struct page_directory_t *kern_pml4e_virt, *kern_pml4e_phy;
 extern struct page_directory_t *cur_pml4e_virt;

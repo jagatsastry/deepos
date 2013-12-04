@@ -5,6 +5,7 @@
 #include<phy_mem.h>
 #include<virt_mem.h>
 #include <task.h>
+#include <sys/gdt.h>
 
 struct Exe_Format exeFormat;
 programHeader pdr;
@@ -188,6 +189,7 @@ int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int k
 
   current_task->rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
   current_task->tss_rsp = (uint64_t)current_task->rsp;
+  tss.rsp0 = (uint64_t)current_task->rsp;
   printf("Move the stack temporarily\n");
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
 
@@ -206,6 +208,7 @@ int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int k
                  "pushq %1\n\t"
        : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
   //}
+  __asm__ __volatile__ ("iretq":::"memory");
 
 
   
@@ -230,7 +233,7 @@ int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int k
   printf("Current rsp of process %d: %x line: %d\n", current_task->id, current_task->rsp, __LINE__);
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
   printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
-  //switch_task();
+  switch_task();
   //__asm__ __volatile__ ("iretq":::"memory");
  // __asm__ __volatile__("sti");
   return 0;

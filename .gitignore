@@ -10,6 +10,5 @@ rootfs/lib/*.o
 rootfs/lib/*.a
 rootfs/lib/*.so
 */bin/*
-bin/*
 *.iso
 .nfs*

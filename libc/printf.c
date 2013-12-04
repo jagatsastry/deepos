@@ -13,11 +13,10 @@ int printf(const char *format, ...) {
      va_start( argp, format );
      convertStr( format , &num , strToStore ,argp);
      va_end( argp );
-     __asm__( "movq $0x00, %%rbx;\
-               movq %0, %%rdx;\
-               movq $0x0C, %%rcx;\
-               int $0x80;\
-               "::"g" (strToStore):"rbx","rdx","rcx") ;
+     __asm__ __volatile__( "movq $0x00, %%rbx":::"rbx");
+     __asm__ __volatile__( "movq %0, %%rdx"::"g"(strToStore):"rdx", "memory");
+     __asm__ __volatile__( "movq $0x0C, %%rcx":::"rcx");
+     __asm__ __volatile__( "  int $0x80");
      return num;  
 }
 
