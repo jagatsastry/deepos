@@ -14,7 +14,6 @@ pid_t waitpid(pid_t pid, int* status, int options) {
     return ret;
 }
 
-#include <defs.h>
 
 /*Waits for a child to end*/
 pid_t wait(int* status) {

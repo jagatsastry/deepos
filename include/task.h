@@ -15,18 +15,27 @@
 
 #define MAX_TASKS 100
 
+/*
+typedef struct vma_t {
+  uint64_t start_block;
+  uint64_t end_block;
+  struct vma_t *next;
+} vma_t;
+*/
 // This structure defines a 'task' - a process.
 typedef struct task
 {
    struct task* parent;
    pid_t id;                // Process ID.
    uint16_t index;                // Process ID.
+   char *program_name;
    uint32_t exit_status;
    uint32_t waiting_pid_exit_status;
    uint8_t STATUS;
    uint32_t sleeping_time;
    uint32_t pid_waiting_for;
    uint32_t run_time;
+   uint32_t just_execd;
 
    uint32_t run_sessions_count; //Number of times it entered switch_task
    uint64_t rsp;       // Kernel stack and base pointers.

@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define NULL 0
 
@@ -6,6 +8,10 @@ char * strtok(char * str, char *comp);
 void dsh(){
    int argc;
    char *argv[ 64 ]; 
+   int p12 = fork();
+   if (p12 == 0) while(1);
+      
+   printf("Just entered dsh: PID %d\n", getpid());
    for( ; ; ){ 
        char* shellPrompt = "crazy OS $";
        printf("\n%s",shellPrompt);
@@ -31,18 +37,20 @@ void dsh(){
            printf("\n%s", argv[i]);
        }
    //fork off a child process
-    /*   int pid = fork();
-       if( pid == 0 )
-       {
-           if( execv( argv[0], argv ) < 0){
-               printf("Bad Command\n");
-               exit(0);
-           } 
 
+       int pid = fork();
+       if (pid == 0) {
+           if (execvpe(argv[0], argv, argv) < 0){
+               printf("Bad Command\n");
+       //        exit(0);
+           } 
        }      
-   int status = 0;
-   wait( &status ); 
-   */ 
+       int bg = command[strlen(command) - 1] == '&';
+       int status = 0;
+       if (!bg)
+         wait(&status); 
+       printf("Returned from a long wait\n");
+       //while(1);
    } 
 }
 

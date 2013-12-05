@@ -66,7 +66,7 @@ void switch_task()
 //  __asm volatile( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
   //Do not update the rsp if it is coming here for the first time and it is not the kernel task
   //You update rsp only when it has passed through the switch task atleast once, or it is the kernel task
-  if (current_task->run_time >= SCHEDULE_FREQUENCY || current_task->id == 1)   {
+  if (current_task->run_time >= SCHEDULE_FREQUENCY)   {
    __asm__ __volatile__("movq %%rsp, %0;":"=g"(current_task->rsp));
    if(DEBUG) printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
   }
@@ -91,7 +91,7 @@ if(DEBUG) printf("Setting rsp %x for process %d: %d\n", current_task->rsp, curre
   __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
 //  cpu_write_rsp(current_task->rsp);
-  if (current_task->run_time < SCHEDULE_FREQUENCY && current_task->id != 1)  {
+  if (current_task->run_time < SCHEDULE_FREQUENCY) {// && current_task->id != 1)  {
     if(DEBUG) printf("Returning now");
     __asm__ __volatile__(
             "popq %r15;\n"

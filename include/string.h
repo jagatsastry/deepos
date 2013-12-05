@@ -2,6 +2,6 @@
 #define STRING_H
 #include <defs.h>
 
-uint64_t strlen(const char *str);
+size_t strlen(const char *str);
 
 #endif

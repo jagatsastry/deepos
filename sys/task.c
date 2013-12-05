@@ -81,7 +81,7 @@ task_t* get_children(pid_t pid) {
   printf("Searching for children\n");
   for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].parent && ready_queue[i].parent->id == pid) {
-      printf("Found a parent %d", i);
+      printf("Found a child %d for parent %d", ready_queue[i].id, pid);
       task_t* child =  ready_queue + i;
       child->next = children;
       children = child;
@@ -101,6 +101,7 @@ task_t* get_task(pid_t pid) {
   return 0;
 }
 
+extern void print_current_task();
 void initialize_tasking()
 {
   //__asm__ __volatile__("cli");
@@ -112,6 +113,7 @@ void initialize_tasking()
    current_task->rsp  = (uint64_t)i_virt_alloc();
    current_task->pml4e = cur_pml4e_virt;
    current_task->STATUS = TASK_READY;
+   current_task->program_name = "init";
 
   printf("Setting ltr");
 
@@ -126,6 +128,7 @@ void initialize_tasking()
    //__asm__ __volatile__("movq $0x2B,%rax;");//::"r"(&tem));
    //__asm__ __volatile__("ltr %rax;");
    printf("Multi task system initialized\n");
+   print_current_task();
 //  __asm__ __volatile__("sti");
 
 }
@@ -150,6 +153,7 @@ uint32_t kfork_wrapper(int kernel)
    new_task->id = next_pid++;
    new_task->rsp =  0;
    new_task->STATUS = TASK_READY;
+   new_task->program_name = parent_task->program_name;
 
    // Add it to the end of the ready queue.
    // Find the end of the ready queue...

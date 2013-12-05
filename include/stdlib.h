@@ -12,11 +12,12 @@ pid_t numtasks();
 uint32_t getpid();
 uint32_t fork();
 int exec(char* filename) ;
+int execvpe(char* filename, char *argv[], char *argp[]) ;
 
 void exit(int status);
 void sleep(uint32_t time);
-pid_t waitpid(uint32_t pid, uint32_t *status, int options);
-pid_t wait(uint32_t *status);
+pid_t waitpid(pid_t pid, uint32_t *status, int options);
+pid_t wait(int *status);
 void *sbrk();
 pid_t getpid();
 

@@ -7,6 +7,13 @@ int x_cord = 0, y_cord = 0;
 void scroll();
 void update_cursor(int row, int col);
 
+int in_kernel_mode() {
+  uint64_t kernel = 0;
+  __asm__ __volatile__("movq %%cs, %0" : "=r"(kernel));
+
+  return kernel != 0x1B;
+}
+
 void putc( char c )
 {
    unsigned short *testMPtr = (unsigned short *)vga_virt_addr;
@@ -50,7 +57,8 @@ void putc( char c )
    } 
    
    scroll(); 
-   update_cursor(y_cord, x_cord);
+   if (in_kernel_mode())
+     update_cursor(y_cord, x_cord);
 }
 extern void port_outb(uint16_t port, uint08_t data) ;
  void update_cursor(int row, int col)

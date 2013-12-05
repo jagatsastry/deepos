@@ -20,6 +20,7 @@ void timer_handler(struct regs *r)
         if (current_task) {
          // printf("Switching from timer\n");
           update_waiting_and_sleeping_tasks();
+          //printf("Switching task\n");
           //kill_zombies(); //Braiiiiinssss
           //if (current_task->id == 2 && timer_ticks > TICK_PER_SECOND + 2)
            // kexit(30);

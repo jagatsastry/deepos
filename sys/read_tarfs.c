@@ -168,6 +168,9 @@ int matchString( char *s , char *t){
 
 }
 extern void* i_virt_alloc();
+extern void print_current_task();
+
+extern uint64_t i_virt_to_phy(uint64_t virt);
 
 uint64_t temp_rsp;
 int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int kernel) {
@@ -189,8 +192,15 @@ int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int k
 
   current_task->rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
   current_task->tss_rsp = (uint64_t)current_task->rsp;
+  current_task->program_name = filename;
   tss.rsp0 = (uint64_t)current_task->rsp;
   printf("Move the stack temporarily\n");
+  print_current_task();
+
+  uint64_t phy_pml4e = i_virt_to_phy((uint64_t)current_task->pml4e);
+
+  __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
+
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
 
   /*if (kernel) {
@@ -207,6 +217,9 @@ int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int k
                  "pushq $0x1b\n\t"
                  "pushq %1\n\t"
        : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
+      current_task->run_sessions_count++;
+          current_task->run_time += SCHEDULE_FREQUENCY;
+
   //}
   __asm__ __volatile__ ("iretq":::"memory");
 
@@ -231,6 +244,7 @@ int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int k
   current_task->run_time = 0; 
  __asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
   printf("Current rsp of process %d: %x line: %d\n", current_task->id, current_task->rsp, __LINE__);
+  current_task->just_execd = 1;
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
   printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
   switch_task();
