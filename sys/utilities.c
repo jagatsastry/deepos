@@ -39,6 +39,10 @@ void print_key(char key)
     scrnLocPtr[j++*2] = '>';
     scrnLocPtr[j*2 - 1] = '7';
 }
+int attrib = 0x0F;
+void setc_bold(unsigned short *dest, char src) {
+  *dest = src | (attrib << 8);
+}
 
 void print_time(int millis)
 {
@@ -46,49 +50,57 @@ void print_time(int millis)
     int hourInt = tot_seconds/3600, minInt = (tot_seconds/60)%60, secInt = tot_seconds%60;
 
     char* preamble = "Uptime: ";
-    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 25 * 80 * 2) - 2 * (22 + strlen(preamble)));
+    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( 25 * 80 * 2) - 2 * (22 + strlen(preamble)));
     
     int i = 0, j = 0;
 
     for( i = 0; preamble[i]; i++, j++) 
-        scrnLocPtr[j*2] = preamble[i];
+        setc_bold(&scrnLocPtr[j], preamble[i]);
 
     char* hour = lpad(itoa(hourInt));
     for( i = 0; hour[i]; i++, j++) 
-        scrnLocPtr[j*2] = hour[i];
-    scrnLocPtr[j*2] = ':';
+        setc_bold(&scrnLocPtr[j], hour[i]);
+    setc_bold(&scrnLocPtr[j], ':');
     j++;
 
     char* min = lpad(itoa(minInt));
     for( i = 0; min[i]; i++, j++) 
-        scrnLocPtr[j*2] = min[i];
-    scrnLocPtr[j*2] = ':';
+        setc_bold(&scrnLocPtr[j], min[i]);
+    setc_bold(&scrnLocPtr[j], ':');
     j++;
 
     char* sec = lpad(itoa(secInt));
     for( i = 0; sec[i]; i++, j++) 
-        scrnLocPtr[j*2] = sec[i];
+        setc_bold(&scrnLocPtr[j], sec[i]);
 }
 
 void print_current_task()
 {
     char* preamble = "PID: ";
-    unsigned char *scrnLocPtr =  (unsigned char*)(vga_virt_addr + ( 24 * 80 * 2) + 2);
+    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( 24 * 80 * 2));
     
     int i = 0, j = 0;
 
     for( i = 0; preamble[i]; i++, j++) 
-        scrnLocPtr[j*2] = preamble[i];
+        setc_bold(&scrnLocPtr[j], preamble[i]);
     char *pid = itoa(current_task->id);
     i = 0;
-    while((scrnLocPtr[j++*2] = pid[i++]));
+    while(pid[i])
+      setc_bold(&scrnLocPtr[j++], pid[i++]);
 
     char *totProcStr = " Tot proc: ";
     for( i = 0; totProcStr[i]; i++, j++) 
-        scrnLocPtr[j*2] = totProcStr[i];
+        setc_bold(&scrnLocPtr[j], totProcStr[i]);
     char *numTask = itoa(numtasks());
     i = 0;
-    while((scrnLocPtr[j++*2] = numTask[i++]));
+    while(numTask[i]) setc_bold(&scrnLocPtr[j++], numTask[i++]);
+}
+
+void clear_line23() {
+    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( 23 * 80 * 2));
+    int i = 0;
+    for (; i < 25; i++)
+      scrnLocPtr[i] = ' ';
 }
 
 uint64_t oct_to_dec(char* oct) {

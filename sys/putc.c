@@ -11,7 +11,7 @@ void putc( char c )
 {
    unsigned short *testMPtr = (unsigned short *)vga_virt_addr;
    unsigned short *scrnLocPtr ;
-   int attrb = 0x0F;
+   int attrb = 0x00;
    // if there is a backspace handle it by moving the x_cord back
    // by one position
    if( c == 0x08 )

@@ -25,12 +25,14 @@ extern int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[]
   
 extern int exec(char*);
 extern uint32_t fork_wrapper(int kernel);
+extern void clear_line23();
 
 void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfree) {
   if(ENABLE_INTR) {
     init_pics();
     idtStart();
   }
+  clear_line23();
   init_mem_mgmt(modulep, kernmem, physbase, physfree);
 
   printf("Booting Deep-OS\n");
