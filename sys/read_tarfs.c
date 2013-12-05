@@ -7,8 +7,6 @@
 #include <task.h>
 #include <sys/gdt.h>
 
-struct Exe_Format exeFormat;
-programHeader pdr;
 uint64_t elf_start;
 
 
@@ -23,13 +21,10 @@ void print_posix_header( struct posix_header_ustar *p){
 
 }
 
-
-
 extern uint64_t oct_to_dec(char *oct);
 extern char _binary_tarfs_start, _binary_tarfs_end;
 
-struct posix_header_ustar* get_elf_file(char* filename) {
-
+struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAddr) {
   char* header =  (char*)(&_binary_tarfs_start);
   char *end =  (char*)(&_binary_tarfs_end);
 
@@ -50,33 +45,22 @@ struct posix_header_ustar* get_elf_file(char* filename) {
    }
    h++;
   
+   programHeader pdr;
    elf_start = (uint64_t) h; 
-   int x = Parse_ELF_Executable((char*)h, oct_to_dec((h-1)->size),&exeFormat,&pdr);
+   int x = Parse_ELF_Executable((char*)h, oct_to_dec((h-1)->size),exeFormatAddr,&pdr);
    printf("Status: %d\n", x);
 
    return h;
 }
 
-void jump_to_start(uint64_t entryAddress) {
-  __asm__ __volatile__("jmp %0"::"r"(entryAddress));
-}
+void map_exe_format(Exe_Format* exeFormatAddr){
 
-void map_exe_format(){
-
-  printf("\nStart Address %x",exeFormat.entryAddr);
-  int i =0;
-  for (; i<exeFormat.numSegments; i++){
+  printf("\nStart Address %x",exeFormatAddr->entryAddr);
+  int i =0, cur_vma_idx = VMA_SEGMENT_START;
+  for (; i<exeFormatAddr->numSegments; i++){
     printf("I :%d\n", i);
     
-    struct Exe_Segment segment  = (struct Exe_Segment)exeFormat.segmentList[i];
-    /*
-     printf("\n  offset in File :%d",segment.offsetInFile);
-     printf("\n Segment length File %d",segment.lengthInFile);
-     printf("\n Segment start Address %x",segment.startAddress);
-     printf("\n Segment size in Memory %x",segment.sizeInMemory);
-     printf("\n Segment prot flags %x",segment.protFlags);
-     printf("\n vAddr %x:",segment.vaddr);
-*/
+    struct Exe_Segment segment  = (struct Exe_Segment)exeFormatAddr->segmentList[i];
     uint64_t start = segment.vaddr;
     uint64_t end = segment.vaddr + segment.sizeInMemory;
    
@@ -101,7 +85,9 @@ void map_exe_format(){
     }
     printf("Seg: %d least_start: %x, max_end: %x\n", i, least_start, max_end);
     if(pageNeeded !=0){
-      
+     current_task->vma[cur_vma_idx].start_addr = least_start;
+     current_task->vma[cur_vma_idx].end_addr = max_end;
+     cur_vma_idx++;
         while(pageNeeded !=0){
 
 	  void *physicalAddress = page_alloc();
@@ -167,94 +153,3 @@ int matchString( char *s , char *t){
   return ret;
 
 }
-extern void* i_virt_alloc();
-extern void print_current_task();
-
-extern uint64_t i_virt_to_phy(uint64_t virt);
-
-uint64_t temp_rsp;
-int kexecvpe_wrapper(char* filename, int argc, char *argv[], char *argp[], int kernel) {
-  printf("Running kexecvpe of %s\n", filename);
-  //__asm__ __volatile__("cli");
-  struct  posix_header_ustar *tar_p = get_elf_file(filename);
-  if (tar_p == NULL)
-    return -1;
-  print_posix_header(tar_p);
-  char* x = tar_p->size;
-  printf("\n%s\n", x);
-  printf("\n%s\n", x);
-  printf("hi\n");
-  map_exe_format();
-  printf("Preparing the stack\n");
-  __asm__ __volatile__("movq %%rsp, %0;":"=g"(temp_rsp));
-
-  current_task->u_rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
-
-  current_task->rsp = (uint64_t)i_virt_alloc() + 4096 - 1;
-  current_task->tss_rsp = (uint64_t)current_task->rsp;
-  current_task->program_name = filename;
-  tss.rsp0 = (uint64_t)current_task->rsp;
-  printf("Move the stack temporarily\n");
-  print_current_task();
-
-  uint64_t phy_pml4e = i_virt_to_phy((uint64_t)current_task->pml4e);
-
-  __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
-
-  __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
-
-  /*if (kernel) {
-  __asm volatile("pushq $0x20\n\t"
-                 "pushq %0\n\t"
-                 "pushq $0x200292\n\t"
-                 "pushq $0x08\n\t"
-                 "pushq %1\n\t"
-       : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
-  } else {*/
-  __asm volatile("pushq $0x23\n\t"
-                 "pushq %0\n\t"
-                 "pushq $0x200292\n\t"
-                 "pushq $0x1b\n\t"
-                 "pushq %1\n\t"
-       : :"c"(current_task->u_rsp),"d"((uint64_t)exeFormat.entryAddr) :"memory");
-      current_task->run_sessions_count++;
-          current_task->run_time += SCHEDULE_FREQUENCY;
-
-  //}
-  __asm__ __volatile__ ("iretq":::"memory");
-
-
-  
-  __asm__ __volatile__ (
-                  "pushq %rax;\n"
-                  "pushq %rbx;\n"
-                  "pushq %rcx;\n"
-                  "pushq %rdx;\n"
-                  "pushq %rsi;\n"
-                  "pushq %rdi;\n"
-                  "pushq %rbp;\n"
-                  "pushq %r8;\n"
-                  "pushq %r9;\n"
-                  "pushq %r10;\n"
-                  "pushq %r11;\n"
-                  "pushq %r12;\n"
-                  "pushq %r13;\n"
-                  "pushq %r14;\n"
-                  "pushq %r15;\n");
-  current_task->run_time = 0; 
- __asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
-  printf("Current rsp of process %d: %x line: %d\n", current_task->id, current_task->rsp, __LINE__);
-  current_task->just_execd = 1;
-  __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
-  printf("Entry addr: %x\n", (uint64_t)exeFormat.entryAddr);
-  switch_task();
-  //__asm__ __volatile__ ("iretq":::"memory");
- // __asm__ __volatile__("sti");
-  return 0;
-}
-
-int kexecvpe(char* filename, int argc, char *argv[], char *argp[]) {
-  return kexecvpe_wrapper(filename, argc, argv, argp, 0);
-}
-
-

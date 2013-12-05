@@ -17,6 +17,8 @@
 #define NX 0x8000000000000 
 #define FRAME 0xFFFFFFFFFFFFF000
 
+#define MEM_FLAG_MASK (~((1ull<<12) - 1))
+
 typedef struct page_directory_t{
   uint64_t entries[512];
 } page_directory_t;
@@ -55,4 +57,7 @@ void map_process_specific(uint64_t, uint64_t, page_directory_t *);
 void identity_mapping();
 
 void* i_virt_alloc();
+uint64_t i_virt_to_phy(uint64_t virt);
+uint64_t i_phy_to_virt(uint64_t phy) ;
+page_directory_t* clone_page_directory(page_directory_t* tab_src, int level);  
 #endif

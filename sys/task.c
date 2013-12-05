@@ -100,7 +100,7 @@ task_t* get_task(pid_t pid) {
   //while(1);
   return 0;
 }
-
+extern char *stack;
 extern void print_current_task();
 void initialize_tasking()
 {
@@ -110,142 +110,37 @@ void initialize_tasking()
      ready_queue[i].index = i;
    current_task = get_next_free_task();
    current_task->id = next_pid++;
-   current_task->rsp  = (uint64_t)i_virt_alloc();
    current_task->pml4e = cur_pml4e_virt;
    current_task->STATUS = TASK_READY;
    current_task->program_name = "init";
+   for (i = 0; i < 10; i++)
+     current_task->vma[i].start_addr = NULL;
+   //uint64_t virt_u_rsp = (uint64_t)i_virt_alloc();
+   current_task->vma[VMA_USER_STACK_IDX].start_addr = (uint64_t)stack;
+   current_task->vma[VMA_KERNEL_STACK_IDX].start_addr = (uint64_t)i_virt_alloc();
+   current_task->vma[VMA_HEAP_IDX].start_addr = (uint64_t)i_virt_alloc();
 
-  printf("Setting ltr");
+   for(i = 0; i < VMA_SEGMENT_START; i++)
+     current_task->vma[i].end_addr = current_task->vma[i].start_addr + 4095;
 
-      int a = 0x28;
-               __asm__ __volatile__("movq %0,%%rax;\n"
-                           "ltr (%%rax);"::"r"(&a));
+    printf("Init: User: %x, Kernel: %x\n", current_task->vma[VMA_KERNEL_STACK_IDX].end_addr, current_task->vma[VMA_HEAP_IDX].end_addr);
 
-    //int a = 0x2B;
-   //__asm__ __volatile__("movq %0,%%rax;\n");
-   //__asm__ __volatile__("ltr (%%rax);"::"r"(&a));
+   current_task->rsp  = current_task->vma[VMA_KERNEL_STACK_IDX].end_addr;
+   current_task->current_heap_ptr  = (void*)current_task->vma[VMA_HEAP_IDX].start_addr;
+   __asm__ __volatile__ ("movq %%rsp, %0;" : "=g"((uint64_t)current_task->u_rsp));
 
-   //__asm__ __volatile__("movq $0x2B,%rax;");//::"r"(&tem));
-   //__asm__ __volatile__("ltr %rax;");
+   printf("Setting ltr");
+
+   int a = 0x28;
+   __asm__ __volatile__("movq %0,%%rax;\n"
+               "ltr (%%rax);"::"r"(&a));
+
    printf("Multi task system initialized\n");
    print_current_task();
-//  __asm__ __volatile__("sti");
-
 }
 
 uint32_t getpid() {
   return current_task->id;
-}
-
-volatile uint64_t temp_rsp;
-uint32_t kfork_wrapper(int kernel)
-{
-   // We are modifying kernel structures, and so cannot be interrupted.
-   //__asm__ __volatile__("cli");
-
-   // Take a pointer to this process' task struct for later reference.
-   task_t *parent_task = (task_t*)current_task;
-
-   // Create a new process.
-   task_t *new_task = get_next_free_task();
-
-   // Clone the address space.
-   new_task->id = next_pid++;
-   new_task->rsp =  0;
-   new_task->STATUS = TASK_READY;
-   new_task->program_name = parent_task->program_name;
-
-   // Add it to the end of the ready queue.
-   // Find the end of the ready queue...
-    printf("Hi numtasks: %d\n", numtasks());
-
-   //page_directory_t *directory = 
-   new_task->pml4e = clone_page_directory(cur_pml4e_virt, 4);
-  // This will be the entry point for the new process.
-  uint64_t rip = _read_rip();
-   // We could be the parent or the child here - check.
-   if (current_task == parent_task)
-   {
-     printf("In the parent task %d\n", current_task->id);
-       __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
-      printf("RSP is %x\n", temp_rsp);
-       // We are the parent, so set up the esp/ebp/eip for our child.
-       uint64_t u_rsp  = (uint64_t)i_virt_alloc();
-       map_process_specific((uint64_t)u_rsp, i_virt_to_phy((uint64_t)u_rsp), new_task->pml4e);
-       memcpy((void*)u_rsp + 2048 - 1, (void*)temp_rsp, 2048);
-       new_task->u_rsp = u_rsp + 2048 - 1;
-
-       new_task->rsp = (uint64_t)i_virt_alloc() ;
-       map_process_specific((uint64_t)new_task->rsp, i_virt_to_phy((uint64_t)new_task->rsp), new_task->pml4e);
-       new_task->rsp = new_task->rsp + 4096 - 1;
-       new_task->tss_rsp = new_task->rsp;
-       new_task->parent = (task_t*)current_task;
-
-        __asm__ __volatile__( "movq %0, %%rsp ": : "m"(new_task->rsp) : "memory" );
-/*
-        __asm__ __volatile__("pushq $0x23\n\t"
-                       "pushq %0\n\t"
-                       "pushq $0x200292\n\t"
-                       "pushq $0x1b\n\t"
-                       "pushq %1\n\t"
-             : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
-
-*/
-  if (kernel) {
-  __asm volatile("pushq $0x20\n\t"
-                 "pushq %0\n\t"
-                 "pushq $0x200292\n\t"
-                 "pushq $0x08\n\t"
-                 "pushq %1\n\t"
-       : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
-  } else {
-  __asm volatile("pushq $0x23\n\t"
-                 "pushq %0\n\t"
-                 "pushq $0x200292\n\t"
-                 "pushq $0x1b\n\t"
-                 "pushq %1\n\t"
-       : :"c"(new_task->u_rsp),"d"((uint64_t)rip) :"memory");
-  }
-
-
-        __asm__ __volatile__ (
-                  "pushq %rax;\n"
-                  "pushq %rbx;\n"
-                  "pushq %rcx;\n"
-                  "pushq %rdx;\n"
-                  "pushq %rsi;\n"
-                  "pushq %rdi;\n"
-                  "pushq %rbp;\n"
-                  "pushq %r8;\n"
-                  "pushq %r9;\n"
-                  "pushq %r10;\n"
-                  "pushq %r11;\n"
-                  "pushq %r12;\n"
-                  "pushq %r13;\n"
-                  "pushq %r14;\n"
-                  "pushq %r15;\n");
-
-       __asm__ __volatile__("movq %%rsp, %0" : "=r"(new_task->rsp));
-
-printf("Updated rsp for %d to %x: %d\n", new_task->id, new_task->rsp, __LINE__);
-        __asm__ __volatile__( "movq %0, %%rsp ": : "m"(temp_rsp) : "memory" );
-
-       //__asm__ __volatile__("sti");
-       printf("Set stack for child\n");
-       return new_task->id;
-   }
-   else
-   {
-     printf("In the child task\n");
-       printf("Returning");
-   //    __asm__ __volatile__("movq %%rsp, %0" : "=r"(temp_rsp));
-    //  printf("RSP is %x\n", temp_rsp);
-       //__asm__ __volatile__("cli");
-       //__asm__ __volatile__("sti");
-       // We are the child - by convention return 0.
-       printf("Returning");
-       return 0;
-   }
 }
 
 pid_t numtasks() {
@@ -257,6 +152,3 @@ pid_t numtasks() {
   return num;
 }
 
-uint32_t kfork() {
-  return kfork_wrapper(0);
-}

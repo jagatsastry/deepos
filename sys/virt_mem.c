@@ -239,26 +239,24 @@ uint64_t i_phy_to_virt(uint64_t phy) {
 }
 
 void* i_virt_alloc() {
-  uint64_t phy_add = (uint64_t)page_alloc();
+  uint64_t phy_add = (uint64_t)page_alloc(); //Skip one page to reduce proximity
+  phy_add = (uint64_t)page_alloc();
 //  printf("\nkernel stack address physical:%x", stack);
   uint64_t virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
-  memset((void*)virt_add, 0, 512*8);
+  memset((void*)virt_add, 0, 4096);
   return (void*)virt_add;
   //printf("\nAllocated virtual address %x \n  mapped to physical address %x", virtual_address_k, stack);
 }
 
-
-#define MASK (~((1ull<<12) - 1))
-
 uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
-  uint64_t* pdpe = (uint64_t*)(i_phy_to_virt(pml4e->entries[0x1ff & (addr >> 39)] & MASK));
-  uint64_t* pde = (uint64_t*)(i_phy_to_virt(pdpe[0x1ff & (addr >> 30)] & MASK));
-  uint64_t* pt = (uint64_t*)(i_phy_to_virt(pde[0x1ff & (addr >> 21)] & MASK));
+  uint64_t* pdpe = (uint64_t*)(i_phy_to_virt(pml4e->entries[0x1ff & (addr >> 39)] & MEM_FLAG_MASK));
+  uint64_t* pde = (uint64_t*)(i_phy_to_virt(pdpe[0x1ff & (addr >> 30)] & MEM_FLAG_MASK));
+  uint64_t* pt = (uint64_t*)(i_phy_to_virt(pde[0x1ff & (addr >> 21)] & MEM_FLAG_MASK));
 
   uint64_t phy_addr = pt[0x1ff & (addr >> 12)];
 
-  return phy_addr & MASK;
+  return phy_addr & MEM_FLAG_MASK;
 }
 
 #define ENABLE_COW_MASK 0x100
@@ -288,7 +286,7 @@ page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level)
   int i = 0;
   for (i = 0; i < 512; i++) {
     if (is_present(&tab_src->entries[i])) {
-      uint64_t virt = i_phy_to_virt(tab_src->entries[i] & MASK);
+      uint64_t virt = i_phy_to_virt(tab_src->entries[i] & MEM_FLAG_MASK);
       page_directory_t* newPage = clone_page_directory_old((page_directory_t*)virt, level - 1);
       tab_new->entries[i] = i_virt_to_phy((uint64_t)newPage) | (tab_src->entries[i] & 0XFFF);
     }
@@ -297,53 +295,4 @@ page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level)
 }
 
 
-page_directory_t* clone_page_directory(page_directory_t* tab_src, int level) {
-  if(i_virt_to_phy((uint64_t)tab_src) == 0x208000) {
-    printf("Alert: Wanted stuff");
-  }
-
-  if (level == 0)  {
-    if (i_virt_to_phy((uint64_t)tab_src) < 0x100000) return tab_src;
-    //printf("Returning %x\n", (uint64_t)tab_src);
-//    uint64_t* newFrame = (uint64_t*)i_virt_alloc();
-//    if ((uint64_t)newFrame == 0xFFFFFFFFF0000000ull)
-//     printf("%d Copying frame from %x to %x\n", level, tab_src, newFrame);
-//    memcpy(newFrame, tab_src, 4096);
-
-//    return (page_directory_t*)newFrame;
-
-    //Mark it as copy on write
-   //*((uint64_t*)tab_src) = 10;
-    printf("Tab src before %x", *((uint64_t*)tab_src));
-    add_attribute((uint64_t*)tab_src, ENABLE_COW_MASK);
-    delete_attribute((uint64_t*)tab_src, WRITABLE);
-    printf("Tab src after %x", *((uint64_t*)tab_src));
-    while(1);
-    return tab_src;
-  }
-
-//  printf("Level: %x\n", level);
-  page_directory_t* tab_new = (page_directory_t*)i_virt_alloc();
-  int i = 0;
-  for (i = 0; i < 512; i++) {
-    if (is_present(&tab_src->entries[i])) {
-      uint64_t virt = i_phy_to_virt(tab_src->entries[i] & MASK);
-      if (level == 1) {
- //       printf("Before: %x \n", tab_src->entries[i]);
-        //if (i_virt_to_phy((uint64_t)tab_src) < 0x100000)
-          tab_new->entries[i] = tab_src->entries[i];
-       // else {
-         // tab_new->entries[i] = (tab_src->entries[i] | ENABLE_COW_MASK) & ~WRITABLE;
-          //tab_src->entries[i] = (tab_src->entries[i] | ENABLE_COW_MASK) & ~WRITABLE;
-        //}
-        //printf("After: %x ", tab_src->entries[i]);
-        //printf("After: %x ", tab_new->entries[i]);
-      } else {
-        page_directory_t* newPage = clone_page_directory((page_directory_t*)virt, level - 1);
-        tab_new->entries[i] = i_virt_to_phy((uint64_t)newPage) | (tab_src->entries[i] & 0XFFF);
-      }
-    }
-  }
-  return tab_new;
-}
 

@@ -4,6 +4,11 @@
 #include <stdlib.h>
 
 
+#define VMA_USER_STACK_IDX 0
+#define VMA_KERNEL_STACK_IDX 1
+#define VMA_HEAP_IDX 2
+#define VMA_SEGMENT_START 3
+
 
 #define SCHEDULE_FREQUENCY 1000
 
@@ -15,13 +20,13 @@
 
 #define MAX_TASKS 100
 
-/*
 typedef struct vma_t {
-  uint64_t start_block;
-  uint64_t end_block;
+  uint64_t start_addr;
+  uint64_t end_addr;
   struct vma_t *next;
 } vma_t;
-*/
+
+
 // This structure defines a 'task' - a process.
 typedef struct task
 {
@@ -36,19 +41,18 @@ typedef struct task
    uint32_t pid_waiting_for;
    uint32_t run_time;
    uint32_t just_execd;
+   vma_t vma[10];
+   char *current_heap_ptr;
 
    uint32_t run_sessions_count; //Number of times it entered switch_task
    uint64_t rsp;       // Kernel stack and base pointers.
    uint64_t tss_rsp;
    uint64_t u_rsp; //User stack and base pointer
 
-   uint64_t heap_ptr; //pointer to heap
-
-   uint64_t code_start;
-   uint64_t code_end; //Where the process image starts and ends
-   
    page_directory_t *pml4e; // Page directory.
    struct task *next;  //To be used in a linked list
+   uint64_t execEntryAddress; //Entry address of executable when doing exec
+   uint64_t temp[10];
 } task_t;
 
 extern volatile task_t *current_task;

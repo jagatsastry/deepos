@@ -1,3 +1,6 @@
+#ifndef ELF_H
+#define ELF_H
+
 #include<defs.h>
 #include<stdio.h>
 /*
@@ -62,14 +65,14 @@ typedef struct {
  * It specifies a region of the executable file to be loaded
  * into memory.
  */
-struct Exe_Segment {
+typedef struct Exe_Segment {
   uint64_t offsetInFile; /* Offset of segment in executable file */
   uint64_t lengthInFile; /* Length of segment data in executable file */
   uint64_t startAddress; /* Start address of segment in user memory */
   uint64_t sizeInMemory; /* Size of segment in memory */
   uint64_t vaddr;
   int protFlags; /* VM protection flags; combination of VM_READ,VM_WRITE,VM_EXEC */
-};
+} Exe_Segment;
 
 /*
  * Maximum number of executable segments we allow.
@@ -82,11 +85,11 @@ struct Exe_Segment {
  * A struct concisely representing all information needed to
  * load an execute an executable.
  */
-struct Exe_Format {
+typedef struct Exe_Format {
   struct Exe_Segment segmentList[EXE_MAX_SEGMENTS]; /* Definition of segments */
   int numSegments; /* Number of segments contained in the executable */
   uint64_t entryAddr; /* Code entry point address */
-};
+} Exe_Format;
 
 int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 			 struct Exe_Format *exeFormat,programHeader * pdr);
@@ -95,3 +98,5 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 void print_exe_format(struct Exe_Format*);
 
 void print_p_format(struct Exe_Format* ,programHeader*);
+
+#endif

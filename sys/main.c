@@ -33,7 +33,7 @@ void start(uint32_t* modulep, void* kernmem_addr, void* physbase, void* physfree
 }
 
 
-#define INITIAL_STACK_SIZE 8092 
+#define INITIAL_STACK_SIZE 4096 
 //4096
 char stack[INITIAL_STACK_SIZE];
 uint32_t* loader_stack;
