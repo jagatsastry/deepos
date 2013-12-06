@@ -37,14 +37,14 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
 
   printf("Booting Deep-OS\n");
   //setup_kernel_stack();
-  printf("Kernmem virt: %x\n", kernmem);
-  printf("Kernmem before: %x\n", get_phy_addr((uint64_t)kernmem, 
+  if (DEBUG) printf("Kernmem virt: %x\n", kernmem);
+  if (DEBUG) printf("Kernmem before: %x\n", get_phy_addr((uint64_t)kernmem, 
       kern_pml4e_virt));
 
   initialize_tasking();
   create_shell();
 
-  printf("Back after a simple switch. Current PID %d\n", getpid());
+  if (DEBUG) printf("Back after a simple switch. Current PID %d\n", getpid());
   while(1);
   //while(1) { 
   //printf("Back after a simple switch. Current PID %d\n", getpid());

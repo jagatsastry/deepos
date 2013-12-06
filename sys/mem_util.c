@@ -20,7 +20,7 @@ void init_mem_mgmt(uint32_t* modulep, void* kernmem, void* physbase, void* physf
   identity_mapping();
   setup_kernel_stack();
   load_kernel_cr3();
-  printf("Initialized mem mgmt\n");
+  if (DEBUG) printf("Initialized mem mgmt\n");
 }
 
 void add_attribute(uint64_t* entry, uint64_t attribute){

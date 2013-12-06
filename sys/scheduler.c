@@ -32,12 +32,12 @@ void update_waiting_and_sleeping_tasks() {
       }
       else 
         wait_task = get_task(task->pid_waiting_for);
-      printf("Out of zombie search\n");
+      if (DEBUG) printf("Out of zombie search\n");
       //if (!wait_task)
       //  task->STATUS == TASK_READY;
       //Once a zombie, always a zombie. Kill them later
       if ( wait_task && wait_task->STATUS == TASK_ZOMBIE) {
-        printf("Found a zombie kid %d on whom %d is waiting\n", wait_task->id, task->id);
+        if (DEBUG) printf("Found a zombie kid %d on whom %d is waiting\n", wait_task->id, task->id);
         task->pid_waiting_for = wait_task->id;
         task->STATUS = TASK_READY;
         task->waiting_pid_exit_status = wait_task->exit_status;

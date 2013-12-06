@@ -108,7 +108,7 @@ void* page_alloc() {
   uint64_t index =  get_index_of_free_page();
   if (index  == -1) {
     return NULL;//out of memory
-    printf("OUT OF MEMORY!");
+    printf("Error: Out of memory!");
     while(1);
   }
   mmap_unset(index);

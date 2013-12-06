@@ -22,19 +22,19 @@ void timer_handler(struct regs *r)
     timer_ticks++;
     if ((timer_ticks-1) % TICK_PER_SECOND == 0) {
         print_time(timer_ticks);
-//        printf("Num tasks: %d\n", numtasks());
+//        if (DEBUG) printf("Num tasks: %d\n", numtasks());
         if (current_task) {
           updateKeyPressEvent();
-         // printf("Switching from timer\n");
+         // if (DEBUG) printf("Switching from timer\n");
           update_waiting_and_sleeping_tasks();
-          //printf("Switching task\n");
+          //if (DEBUG) printf("Switching task\n");
           //kill_zombies(); //Braiiiiinssss
           //if (current_task->id == 2 && timer_ticks > TICK_PER_SECOND + 2)
            // kexit(30);
          // else 
          if (DEBUG)   printf("Calling switch task from timer interrup\n");
             switch_task();
-          //printf("Back from switch task\n");
+          //if (DEBUG) printf("Back from switch task\n");
         }
     }
 }

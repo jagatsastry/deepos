@@ -10,11 +10,11 @@ pid_t kwaitpid(pid_t pid, uint32_t *status) {
   //__asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
   //Simple trick: We have set the rip and rsp. 
   //When we return from switch_task after a switch, we unset the RIP, so we know that it is a jump from timer.
-  printf("%d waiting on %d\n", current_task->id, (int)pid);
+  if (DEBUG) printf("%d waiting on %d\n", current_task->id, (int)pid);
   switch_task();
   *status = current_task->waiting_pid_exit_status;
   pid = current_task->pid_waiting_for;
-  printf("%d done waiting on %d. Exited with status %d\n", current_task->id, pid, *status);
+  if (DEBUG) printf("%d done waiting on %d. Exited with status %d\n", current_task->id, pid, *status);
   return pid;
 }
 

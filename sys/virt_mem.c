@@ -66,9 +66,9 @@ void map_kernel(){
 
 void setup_kernel_stack(){
   struct kernel_stack *stack = (struct kernel_stack *) page_alloc();
-  printf("\nkernel stack address physical:%x", stack);
+  if (DEBUG) printf("\nkernel stack address physical:%x", stack);
   map_process(kern_stack_virt, (uint64_t)stack);
-  printf("\nkernel Stack virtual address %x \n  mapped to physical address %x", kern_stack_virt, stack);
+  if (DEBUG) printf("\nkernel Stack virtual address %x \n  mapped to physical address %x", kern_stack_virt, stack);
 }
 
 void map_process(uint64_t virtual_address, uint64_t physical_address){
@@ -85,10 +85,10 @@ void map_process_specific(uint64_t virtual_address, uint64_t physical_address, p
   if(is_present(&pml4e_entry)){
     pdpt = (struct page_directory_t *)get_address(&pml4e_entry);
   }else{
-    printf("\nPDPE not Present");
+    if (DEBUG) printf("\nPDPE not Present");
     pdpt = (struct page_directory_t *)page_alloc();
     uint64_t pdpt_entry = (uint64_t)pdpt;
-    printf("\nentry %x",pdpt_entry);
+    if (DEBUG) printf("\nentry %x",pdpt_entry);
     add_attribute(&pdpt_entry,PRESENT);
     add_attribute(&pdpt_entry,WRITABLE);
     add_attribute(&pdpt_entry,USER_MODE);
@@ -151,10 +151,10 @@ void map(uint64_t virtual_address, uint64_t physical_address){
     if(is_present(&pml4e_entry)){
       pdpt = (struct page_directory_t *)get_address(&pml4e_entry);     
     }else{
-      printf("\nPDPE not Present");
+      if (DEBUG) printf("\nPDPE not Present");
       pdpt = (struct page_directory_t *)page_alloc();
       uint64_t pdpt_entry = (uint64_t)pdpt;
-      printf("\nentry %x",pdpt_entry);
+      if (DEBUG) printf("\nentry %x",pdpt_entry);
       add_attribute(&pdpt_entry,PRESENT);
       add_attribute(&pdpt_entry,WRITABLE);
       add_attribute(&pdpt_entry,USER_MODE);
@@ -241,12 +241,12 @@ uint64_t i_phy_to_virt(uint64_t phy) {
 void* i_virt_alloc() {
   uint64_t phy_add = (uint64_t)page_alloc(); //Skip one page to reduce proximity
   phy_add = (uint64_t)page_alloc();
-//  printf("\nkernel stack address physical:%x", stack);
+//  if (DEBUG) printf("\nkernel stack address physical:%x", stack);
   uint64_t virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
   memset((void*)virt_add, 0, 4096);
   return (void*)virt_add;
-  //printf("\nAllocated virtual address %x \n  mapped to physical address %x", virtual_address_k, stack);
+  //if (DEBUG) printf("\nAllocated virtual address %x \n  mapped to physical address %x", virtual_address_k, stack);
 }
 
 uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
@@ -262,15 +262,15 @@ uint64_t get_phy_addr(uint64_t addr, page_directory_t* pml4e) {
 #define ENABLE_COW_MASK 0x100
 page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level) {
   if(i_virt_to_phy((uint64_t)tab_src) == 0x208000) {
-    printf("Alert: Wanted stuff");
+    if (DEBUG) printf("Alert: Wanted stuff");
   }
 
   if (level == 0)  {
     if (i_virt_to_phy((uint64_t)tab_src) < 0x100000) return tab_src;
-    //printf("Returning %x\n", (uint64_t)tab_src);
+    //if (DEBUG) printf("Returning %x\n", (uint64_t)tab_src);
 //    uint64_t* newFrame = (uint64_t*)i_virt_alloc();
 //    if ((uint64_t)newFrame == 0xFFFFFFFFF0000000ull)
-//     printf("%d Copying frame from %x to %x\n", level, tab_src, newFrame);
+//     if (DEBUG) printf("%d Copying frame from %x to %x\n", level, tab_src, newFrame);
 //    memcpy(newFrame, tab_src, 4096);
 
 //    return (page_directory_t*)newFrame;
@@ -281,7 +281,7 @@ page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level)
     return tab_src;
   }
 
-//  printf("Level: %x\n", level);
+//  if (DEBUG) printf("Level: %x\n", level);
   page_directory_t* tab_new = (page_directory_t*)i_virt_alloc();
   int i = 0;
   for (i = 0; i < 512; i++) {

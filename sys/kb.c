@@ -30,7 +30,7 @@ void keyboard_handler(struct regs *r)
             unsigned char pressedKey = kbdus[scancode];
             if( scancode == 28){
                enterPressed = 1;
-               printf("\nEntered Pressed");
+               if (DEBUG) printf("\nEntered Pressed");
                if(current_task->waiting_for_input != 1)
 
 

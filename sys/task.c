@@ -14,10 +14,10 @@ typedef uint32_t taskid_t;
 extern uint64_t kern_stack_virt;
 
 void enter_user_mode () {
-  printf("Entering user mode\n");
+  if (DEBUG) printf("Entering user mode\n");
   *((uint64_t*)kern_stack_virt) = 0;
   tss.rsp0 = kern_stack_virt;
-  printf("Stack addr: %x\n", tss.rsp0);
+  if (DEBUG) printf("Stack addr: %x\n", tss.rsp0);
 //  __asm__ __volatile__ ("cli")
   
   //while(1);
@@ -29,7 +29,7 @@ void enter_user_mode () {
 */
   _enter_user_mode();  
   //*((uint64_t*)virtual_address_k) = 0;
-  printf("In user mode\n");
+  if (DEBUG) printf("In user mode\n");
 }
 
 
@@ -57,7 +57,7 @@ task_t* get_next_ready_task() {
   int i = 1;
   for (i = 0; i < MAX_TASKS; i++) {
     task_t *task = &ready_queue[(startIdx + i) %MAX_TASKS];
-    //printf("Task %d Status %d\n", task->id, task->STATUS);
+    //if (DEBUG) printf("Task %d Status %d\n", task->id, task->STATUS);
     if (task->STATUS == TASK_READY)
       return task;
   }
@@ -78,10 +78,10 @@ task_t* get_next_free_task() {
 task_t* get_children(pid_t pid) {
   task_t *children = (task_t*)0;
   int i;
-  printf("Searching for children\n");
+  if (DEBUG) printf("Searching for children\n");
   for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].parent && ready_queue[i].parent->id == pid) {
-      printf("Found a child %d for parent %d", ready_queue[i].id, pid);
+      if (DEBUG) printf("Found a child %d for parent %d", ready_queue[i].id, pid);
       task_t* child =  ready_queue + i;
       child->next = children;
       children = child;
@@ -123,19 +123,19 @@ void initialize_tasking()
    for(i = 0; i < VMA_SEGMENT_START; i++)
      current_task->vma[i].end_addr = current_task->vma[i].start_addr + 4095;
 
-    printf("Init: User: %x, Kernel: %x\n", current_task->vma[VMA_KERNEL_STACK_IDX].end_addr, current_task->vma[VMA_HEAP_IDX].end_addr);
+    if (DEBUG) printf("Init: User: %x, Kernel: %x\n", current_task->vma[VMA_KERNEL_STACK_IDX].end_addr, current_task->vma[VMA_HEAP_IDX].end_addr);
 
    current_task->rsp  = current_task->vma[VMA_KERNEL_STACK_IDX].end_addr;
    current_task->current_heap_ptr  = (void*)current_task->vma[VMA_HEAP_IDX].start_addr;
    __asm__ __volatile__ ("movq %%rsp, %0;" : "=g"((uint64_t)current_task->u_rsp));
 
-   printf("Setting ltr");
+   if (DEBUG) printf("Setting ltr");
 
    int a = 0x28;
    __asm__ __volatile__("movq %0,%%rax;\n"
                "ltr (%%rax);"::"r"(&a));
 
-   printf("Multi task system initialized\n");
+   if (DEBUG) printf("Multi task system initialized\n");
    print_current_task();
 }
 

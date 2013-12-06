@@ -52,7 +52,6 @@ void boot(void)
 	);
 	reload_gdt();
 	setup_tss();
-  printf("%d", sizeof(tss));
 
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),

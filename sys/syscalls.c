@@ -9,7 +9,7 @@ void print( struct regsForSyscall *regs)
     char *strPtr = (char *)regs->rdx;
     int i=0;
     //int len = (int)regs->rcx;
-    printf("%p",strPtr);
+    if (DEBUG) printf("%p",strPtr);
     while( strPtr[i] != '\0' )
     {
            putc(strPtr[i]);
@@ -61,14 +61,14 @@ void sscanfSystemCall( struct regsForSyscall *regs )
 {
     //const char * formatStr = ( const char *)regs->rdx;
     //void* memAddr = (void *)regs->rdx;
-    //printf("\nAlok %p",regs->rdx); 
-    //printf("\nAbhishek %p",regs->rcx);
+    //if (DEBUG) printf("\nAlok %p",regs->rdx); 
+    //if (DEBUG) printf("\nAbhishek %p",regs->rcx);
     keyPressedPtr = (int *)regs->rcx; 
     current_task->waiting_for_input = 1;
     enterPressed = 0;
     curBuffIndex = 0;
-    //printf("\nValue of keyPressedPtr is %p",keyPressedPtr); 
-    //printf("The sting is %x",buff);
+    //if (DEBUG) printf("\nValue of keyPressedPtr is %p",keyPressedPtr); 
+    //if (DEBUG) printf("The sting is %x",buff);
     //enterToMemory(memAddr,1);
 
 }
@@ -79,7 +79,7 @@ void sscanfSystemCall( struct regsForSyscall *regs )
 extern void cpu_write_rcx();
 
 void sys_sleep(struct regsForSyscall * s) {
-  printf("Sleeping for %ds\n", s->rdx);
+  if (DEBUG) printf("Sleeping for %ds\n", s->rdx);
   ksleep(*(uint64_t*)s->rdx);
 }
 
@@ -115,7 +115,7 @@ void sys_execvpe(struct regsForSyscall * s) {
   char **argp = (char**)s->rsi;
   int *ret = (int*)s->rsi;
 
-  printf("syscall: Running execvpe of %s\n", filename);
+  if (DEBUG) printf("syscall: Running execvpe of %s\n", filename);
   int argc = 0;
   for(; argv[argc]; argc++);
 
@@ -139,18 +139,18 @@ static void *syscalls[11] =
 
 void syscall_handler( struct regsForSyscall * s)
 {
-       //printf("SysCall handler begins\n");
-       //printf("\nSyscall no %x",s->rbx);
+       //if (DEBUG) printf("SysCall handler begins\n");
+       //if (DEBUG) printf("\nSyscall no %x",s->rbx);
        if( s->rbx > NUM_SYSCALLS )
          return;
-       //printf("Inside Syscall handler\n");
+       //if (DEBUG) printf("Inside Syscall handler\n");
        void (*location)(struct regsForSyscall*) = 
            (void (*)(struct regsForSyscall*))syscalls[ s->rbx ];
-       //printf("\nInside fault handler Alok\n");
-       //printf("\nrax : %p",s->rax);
-       //printf("\nrbx %p",s->rbx);
-       //printf("\nrcx : %x",s->rcx);
-       //printf("\nrdx %p",s->rdx); 
+       //if (DEBUG) printf("\nInside fault handler Alok\n");
+       //if (DEBUG) printf("\nrax : %p",s->rax);
+       //if (DEBUG) printf("\nrbx %p",s->rbx);
+       //if (DEBUG) printf("\nrcx : %x",s->rcx);
+       //if (DEBUG) printf("\nrdx %p",s->rdx); 
        location(s);
       /* 
       __asm__ __volatile__ ("call *%0;"
