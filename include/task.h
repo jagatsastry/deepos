@@ -33,6 +33,7 @@ typedef struct task
    struct task* parent;
    pid_t id;                // Process ID.
    int new_proc;
+   int waiting_for_input;
    uint16_t index;                // Process ID.
    char *program_name;
    uint32_t exit_status;

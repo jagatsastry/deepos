@@ -64,6 +64,7 @@ void sscanfSystemCall( struct regsForSyscall *regs )
     //printf("\nAlok %p",regs->rdx); 
     //printf("\nAbhishek %p",regs->rcx);
     keyPressedPtr = (int *)regs->rcx; 
+    current_task->waiting_for_input = 1;
     enterPressed = 0;
     curBuffIndex = 0;
     //printf("\nValue of keyPressedPtr is %p",keyPressedPtr); 

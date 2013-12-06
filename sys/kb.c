@@ -1,4 +1,5 @@
 #include<pic.h>
+#include <task.h>
 #include<defs.h>
 #include<stdio.h>
 #include<kb.h>
@@ -28,17 +29,20 @@ void keyboard_handler(struct regs *r)
         {
             unsigned char pressedKey = kbdus[scancode];
             if( scancode == 28){
+               enterPressed = 1;
                printf("\nEntered Pressed");
+               if(current_task->waiting_for_input != 1)
+
+
                /*if( enterPressed == 0){
                      buff[ curBuffIndex ] = pressedKey;
                      curBuffIndex++;
                }*/ 
-               *keyPressedPtr = 1; 
                // while(1); 
                //printf("Value of keyPressed %d",*keyPressed); 
-               enterPressed = 1;
-               return; 
+               return;
             } 
+
             if (SHIFT_PRESSED == 1) {
 		    if(scancode >= 2 && scancode <= 13)
 			    pressedKey = shiftNums[scancode - 2];

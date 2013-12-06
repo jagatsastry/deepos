@@ -7,7 +7,13 @@
 #include <timer.h>
 #include <scheduler.h>
 
-
+void updateKeyPressEvent() {
+    if(enterPressed == 1 && current_task->waiting_for_input == 1) {
+      current_task->waiting_for_input = 0;
+      enterPressed = 0;
+      *keyPressedPtr = 1;
+    }
+}
 
 void timer_handler(struct regs *r)
 {
@@ -18,6 +24,7 @@ void timer_handler(struct regs *r)
         print_time(timer_ticks);
 //        printf("Num tasks: %d\n", numtasks());
         if (current_task) {
+          updateKeyPressEvent();
          // printf("Switching from timer\n");
           update_waiting_and_sleeping_tasks();
           //printf("Switching task\n");
