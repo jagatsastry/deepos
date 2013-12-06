@@ -79,7 +79,15 @@ void switch_task()
     printf("Task %d: USP %x, RSP %x\n", current_task->id, current_task->u_rsp, current_task->rsp);
   __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
-  //if (current_task->run_time < SCHEDULE_FREQUENCY) {// && current_task->id != 1)  {
+  if (current_task->rip) {
+      current_task->run_sessions_count++;
+      current_task->run_time += SCHEDULE_FREQUENCY;
+ 
+      __asm__ __volatile__( "movq %0, %%rcx; \
+                        movq $0x12345, %%rax; \
+                        jmpq *%%rcx" : : "r"(current_task->rip));
+  }
+  if (current_task->run_time < SCHEDULE_FREQUENCY) {// && current_task->id != 1)  {
     if(DEBUG) printf("Returning now");
     __asm__ __volatile__(
             "popq %r15;\n"
@@ -108,7 +116,7 @@ void switch_task()
     current_task->run_time += SCHEDULE_FREQUENCY;
     __asm__ __volatile__("iretq" ::: "memory");
 
-  //}
+  }
   if(DEBUG) printf("Switched to task: %d Num tasks: %d\n", current_task->id, numtasks());   //printf("Swithing 2\n");
   current_task->run_time += SCHEDULE_FREQUENCY;
   current_task->run_sessions_count++;
