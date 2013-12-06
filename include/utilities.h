@@ -9,5 +9,6 @@ struct smap_t {
 }__attribute__((packed));
 
 void print_status_bar(int millis);
+//uint64_t oct_to_dec(char *oct);
 
 #endif

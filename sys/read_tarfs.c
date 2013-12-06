@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<defs.h>
+#include <files.h>
 #include <string.h>
 #include<sys/tarfs.h>
 #include<elf.h>
@@ -26,25 +27,54 @@ extern uint64_t oct_to_dec(char *oct);
 extern char _binary_tarfs_start, _binary_tarfs_end;
 
 struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAddr) {
+
+/*
   char* header =  (char*)(&_binary_tarfs_start);
   char *end =  (char*)(&_binary_tarfs_end);
-
 // while(header < (struct posix_header_ustar*)(&_binary_tarfs_end))
   struct posix_header_ustar * h = (struct posix_header_ustar*)header;
    while(header < end - 512 && strcmp(h->name, filename) != 0) {
     int sz = oct_to_dec(h->size);
     if (DEBUG) printf("Name: %s Size: %d Cur: %p\n", h->name, sz, h);
-    int jump = (sizeof(struct posix_header_ustar) + sz);
-    if (jump % 512 != 0)
-      jump += (512 - jump % 512);
+    if (sz % 512 != 0)
+      sz += (512 - sz % 512);
+    int jump = (512 + sz);
     header = header + jump;
     h = (struct posix_header_ustar*)header;
    }
-   if (header >= end) {
+*/       uint64_t start = (uint64_t)&_binary_tarfs_start;
+       uint64_t end = (uint64_t)&_binary_tarfs_end;
+       struct posix_header_ustar *ptr;
+       ptr = (struct posix_header_ustar *)start;
+       while(start < end - 512) {
+          ptr = (struct posix_header_ustar *)start;
+          if (DEBUG) printf("\nName %s",ptr->name);
+          if (DEBUG) printf("\nSize %s",ptr->size);
+          if( !strcmp( ptr->name, filename)){
+              start = start + sizeof(struct posix_header_ustar );
+              break; 
+          } 
+          int size = 0, i =0;
+          while( ptr->size[i] != '\0'){
+             size = size*10 + ( ptr->size[i] - '0');
+             i++ ;
+          }
+          //printf("\n Size before sending %d", size ); 
+          size = octal_decimal( size );
+          //printf("\nThe size is %d", size); 
+          int offset = 0;
+          if( size % 512 != 0 )
+          {
+             offset =   512 - size % 512;
+          }
+          start = start + 512 + size + offset ;
+      }
+
+   if (start >= end) {
     if (DEBUG) printf("ERROR: %s not found in tarfs\n", filename);
     return NULL;
    }
-   h++;
+   struct posix_header_ustar *h = (struct posix_header_ustar*) start;
   
    programHeader pdr;
    elf_start = (uint64_t) h; 

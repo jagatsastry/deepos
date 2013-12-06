@@ -97,7 +97,7 @@ void print_current_task()
 }
 
 void clear_line(int line) {
-    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( 24 * 80 * 2));
+    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( line * 80 * 2));
     int i = 0;
     for (; i < 25; i++)
       scrnLocPtr[i] = ' ';

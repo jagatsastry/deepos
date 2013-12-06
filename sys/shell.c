@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <task.h>
+#include <utilities.h>
+
+extern void clear_line(int);
 
 void create_shell() {
     //printf("Execing");
