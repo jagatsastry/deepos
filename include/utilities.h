@@ -8,5 +8,6 @@ struct smap_t {
   uint32_t type;
 }__attribute__((packed));
 
+void print_status_bar(int millis);
 
 #endif

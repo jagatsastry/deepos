@@ -2,56 +2,54 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NULL 0
 
 char * strtok(char * str, char *comp);
+
 void dsh(){
    int argc;
    char *argv[ 64 ]; 
-   int p12 = fork();
-   if (p12 == 0) while(1);
       
-   printf("Just entered dsh: PID %d\n", getpid());
+   if (DEBUG) printf("Just entered dsh: PID %d\n", getpid());
    for( ; ; ){ 
-       char* shellPrompt = "crazy OS $";
+       char* shellPrompt = "dsh [/] $ "; //TODO: strcat with pwd
        printf("\n%s",shellPrompt);
        
-       //accept the input from the user
-       char command[ 256 ] = { 0 }; //"bin/hello" };
+       char command[ 256 ] = { 0 };
        int numBytes = scanf("%s", command );   
 
-       //printk("%d",command); 
       if( command[0] == '\0'){ 
-          printf("enterPressed");  
+          if (DEBUG) printf("enterPressed");  
           continue;
        }
        if( numBytes < 0 ){
            printf("\nShell Error");
        }
-       printf("\nCommand entered is %s",command);  
+       if (DEBUG) printf("\nCommand entered is %s",command);  
        argc = 0;
-       //argv[ 64 ];
        argv[ argc ] = strtok( command, " \t\n"); 
        while( argc++ < 64 )
            if( !(argv[ argc ] = strtok( NULL, " \t\n" )) ) break;
        for(int i = 0; i < argc;i++){
-           printf("\n%s", argv[i]);
+           if (DEBUG) printf("\n%s", argv[i]);
        }
-   //fork off a child process
+
+       int bg = command[strlen(command) - 1] == '&';
+       if (bg)
+         command[strlen(command) - 1] = 0;
 
        int pid = fork();
        if (pid == 0) {
-           if (execvpe(argv[0], argv, argv) < 0){
-               printf("Bad Command\n");
-       //        exit(0);
+           if(execvpe(argv[0], argv, argv) < 0){
+               printf("dsh: %s: command not found\n", command);
+               return;
            } 
-       }      
-       int bg = command[strlen(command) - 1] == '&';
-       int status = 0;
-       if (!bg)
-         wait(&status); 
-       printf("Returned from a long wait\n");
-  //     while(1);
+       } else  {
+           int status = 0;
+           if (!bg) {
+             wait(&status); 
+           }
+           if (DEBUG) printf("Returned from a long wait\n");
+       }
    } 
 }
 
@@ -65,7 +63,7 @@ char * strtok(char * str, char *comp)
 	if(str != NULL){ 
 		s = str;
                 pos = 0;
-                printf("\nNew command entered %s",str); 
+                if (DEBUG) printf("\nNew command entered %s",str); 
                 start = pos; 
                 if( *str == '\r')
                    return NULL; 

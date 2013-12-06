@@ -83,7 +83,7 @@ void print_current_task()
 
     for( i = 0; preamble[i]; i++, j++) 
         setc_bold(&scrnLocPtr[j], preamble[i]);
-    char *pid = itoa(current_task->id); //current_task->program_name;//itoa(current_task->id);
+    char *pid = itoa(current_task->id);
     i = 0;
     while(pid[i])
       setc_bold(&scrnLocPtr[j++], pid[i++]);
@@ -96,8 +96,8 @@ void print_current_task()
     while(numTask[i]) setc_bold(&scrnLocPtr[j++], numTask[i++]);
 }
 
-void clear_line23() {
-    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( 23 * 80 * 2));
+void clear_line(int line) {
+    unsigned short *scrnLocPtr =  (unsigned short*)(vga_virt_addr + ( 24 * 80 * 2));
     int i = 0;
     for (; i < 25; i++)
       scrnLocPtr[i] = ' ';
@@ -116,3 +116,9 @@ uint64_t oct_to_dec(char* oct) {
   return ret;
 }
 
+void print_status_bar(int timeInMillis) {
+  clear_line(23);
+  clear_line(24);
+  print_time(timeInMillis);
+  print_current_task();
+}

@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<defs.h>
+#include <string.h>
 #include<sys/tarfs.h>
 #include<elf.h>
 #include<phy_mem.h>
@@ -30,7 +31,7 @@ struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAdd
 
 // while(header < (struct posix_header_ustar*)(&_binary_tarfs_end))
   struct posix_header_ustar * h = (struct posix_header_ustar*)header;
-   while(header < end && matchString(h->name, filename) != 0) {
+   while(header < end - 512 && strcmp(h->name, filename) != 0) {
     int sz = oct_to_dec(h->size);
     if (DEBUG) printf("Name: %s Size: %d Cur: %p\n", h->name, sz, h);
     int jump = (sizeof(struct posix_header_ustar) + sz);
@@ -40,7 +41,7 @@ struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAdd
     h = (struct posix_header_ustar*)header;
    }
    if (header >= end) {
-    printf("ERROR: %s not found in tarfs\n");
+    if (DEBUG) printf("ERROR: %s not found in tarfs\n", filename);
     return NULL;
    }
    h++;
@@ -118,38 +119,7 @@ void map_exe_format(Exe_Format* exeFormatAddr){
 
 	  size--;
 	}
-	
-	//	if (DEBUG) printf("\nvadd %x",vadd);
      
     }
  }
-
-  //moving the instruction pointer
-  
-  //  __asm__ __volatile__("movq %0,%%rip;"::"g"(entryAddress));
- // jump_to_start(entryAddress);
-
-
-}
-
-
-
-int matchString( char *s , char *t){
-
-  int ret = 0;
-
-  while (!(ret = *(unsigned char *) s - *(unsigned char *) t) && *t){
-    ++s;
-    ++t;
-  }
-
-  if (ret < 0){
-    ret = -1;
-  }
-  else if (ret > 0){
-    ret = 1 ;
-  }
-
-  return ret;
-
 }

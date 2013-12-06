@@ -120,6 +120,7 @@ void sys_execvpe(struct regsForSyscall * s) {
   for(; argv[argc]; argc++);
 
   *ret = kexecvpe(filename, argc, argv, argp);
+  if (DEBUG) printf("In syscall-execvpe. Going back\n");
 }
 
 #define NUM_SYSCALLS  11

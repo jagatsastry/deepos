@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[]) {
   printf("*********Sleeping********\n");
-  //sleep(1);
+  sleep(2);
   printf("Back from sleeping: PID %d\n", getpid());
   pid_t id = getpid();
   

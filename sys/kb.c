@@ -31,8 +31,7 @@ void keyboard_handler(struct regs *r)
             if( scancode == 28){
                enterPressed = 1;
                if (DEBUG) printf("\nEntered Pressed");
-               if(current_task->waiting_for_input != 1)
-
+               putc('\n');
 
                /*if( enterPressed == 0){
                      buff[ curBuffIndex ] = pressedKey;

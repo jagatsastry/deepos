@@ -1,5 +1,6 @@
 #include <defs.h>
 #include <stdio.h>
+#include <string.h>
 #include <task.h>
 #include <virt_mem.h>
 #include <sys/gdt.h>
@@ -53,14 +54,20 @@ extern page_directory_t* clone_page_directory(page_directory_t* tab_src, int lev
 
 task_t* get_next_ready_task() {
   uint32_t startIdx = (current_task?current_task->index + 1:0);
-   
-  int i = 1;
+  task_t *idle = NULL;
+  int i = 0;
   for (i = 0; i < MAX_TASKS; i++) {
     task_t *task = &ready_queue[(startIdx + i) %MAX_TASKS];
+    if (!strcmp(task->program_name, "bin/idle")) {
+      idle = task;
+      continue;
+    }
     //if (DEBUG) printf("Task %d Status %d\n", task->id, task->STATUS);
     if (task->STATUS == TASK_READY)
       return task;
   }
+  if (idle)
+    return idle;
   printf("\nERR: NO READY TASK\n");
   while(1);
 }
@@ -78,10 +85,10 @@ task_t* get_next_free_task() {
 task_t* get_children(pid_t pid) {
   task_t *children = (task_t*)0;
   int i;
-  if (DEBUG) printf("Searching for children\n");
+  if (DEBUG == 2) printf("Searching for children\n");
   for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].parent && ready_queue[i].parent->id == pid) {
-      if (DEBUG) printf("Found a child %d for parent %d", ready_queue[i].id, pid);
+      if (DEBUG == 2) printf("Found a child %d for parent %d", ready_queue[i].id, pid);
       task_t* child =  ready_queue + i;
       child->next = children;
       children = child;
@@ -112,7 +119,7 @@ void initialize_tasking()
    current_task->id = next_pid++;
    current_task->pml4e = cur_pml4e_virt;
    current_task->STATUS = TASK_READY;
-   current_task->program_name = "init";
+   strcpy((char*)current_task->program_name, (char*)"init");
    for (i = 0; i < 10; i++)
      current_task->vma[i].start_addr = NULL;
    //uint64_t virt_u_rsp = (uint64_t)i_virt_alloc();

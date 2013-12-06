@@ -32,7 +32,6 @@ void init_kernel(uint32_t* modulep, void* kernmem, void* physbase, void* physfre
     init_pics();
     idtStart();
   }
-  clear_line23();
   init_mem_mgmt(modulep, kernmem, physbase, physfree);
 
   printf("Booting Deep-OS\n");

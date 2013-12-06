@@ -16,7 +16,7 @@
 #define TASK_READY 1
 #define TASK_WAITING_ON_PID 2
 #define TASK_SLEEPING 3
-#define TASK_ZOMBIE 3
+#define TASK_ZOMBIE 4
 
 #define MAX_TASKS 100
 
@@ -35,7 +35,7 @@ typedef struct task
    int new_proc;
    int waiting_for_input;
    uint16_t index;                // Process ID.
-   char *program_name;
+   char program_name[64];
    uint32_t exit_status;
    uint32_t waiting_pid_exit_status;
    uint8_t STATUS;
