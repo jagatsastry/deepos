@@ -42,7 +42,7 @@ void update_waiting_and_sleeping_tasks() {
         task->pid_waiting_for = wait_task->id;
         task->STATUS = TASK_READY;
         task->waiting_pid_exit_status = wait_task->exit_status;
-
+        wait_task->parent = 0; //task disowns a zombie child
 /*        int idx = wait_task->index;
         *wait_task = 0;
         wait_task->index = idx;*/

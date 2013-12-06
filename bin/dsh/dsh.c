@@ -46,6 +46,7 @@ void dsh(){
        } else  {
            int status = 0;
            if (!bg) {
+             //waitpid(pid, (uint32_t*)&status, 0); 
              wait(&status); 
            }
            if (DEBUG) printf("Returned from a long wait\n");
