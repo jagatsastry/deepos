@@ -94,7 +94,7 @@ void sys_fork(struct regsForSyscall * s) {
   uint64_t* rval = (uint64_t*)s->rdx;
   int ret = kfork(s);
   *rval = ret;
-  printf("Returning from fork\n");
+  if (DEBUG) printf("Returning from fork\n");
 }
 
 extern void* i_virt_alloc();

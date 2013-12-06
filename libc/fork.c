@@ -18,16 +18,7 @@ uint32_t fork() {
                movq %0, %%rdx;\
                int $0x80;\
                "::"g" (&ret):"rbx","rdx", "memory") ;
-   if (ret == 0) {
-     printf("In child fork\n");
-//     __asm__ __volatile__( "movq %0, %%rsp ": : "m"((uint64_t)stack_copy_child) : "memory" );
-   } else {
- //    printf("In parent fork\n");
- //    __asm__ __volatile__( "movq %0, %%rdx ": : "g"((uint64_t)ret) : "rdx", "memory");
-  //   __asm__ __volatile__( "movq %0, %%rsp ": : "m"((uint64_t)stack_copy_parent) : "memory" );
-   //  __asm__ __volatile__( "movq %%rdx, %0 ": "=g"((uint64_t)ret): : "rdx", "memory");
-   }
    pid_t p = getpid();
-   printf("Returning from fork. Ret %d Current pid %d\n", ret, p);
+   if (DEBUG) printf("Returning from fork. Ret %d Current pid %d\n", ret, p);
    return ret;
 }

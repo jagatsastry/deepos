@@ -60,6 +60,23 @@ void switch_task()
    }
   
   if (!current_task->new_proc) { //current_task->run_time >= SCHEDULE_FREQUENCY)   {
+    __asm__ __volatile__ (
+            "pushq %rax;\n"
+            "pushq %rbx;\n"
+            "pushq %rcx;\n"
+            "pushq %rdx;\n"
+            "pushq %rsi;\n"
+            "pushq %rdi;\n"
+            "pushq %rbp;\n"
+            "pushq %r8;\n"
+            "pushq %r9;\n"
+            "pushq %r10;\n"
+            "pushq %r11;\n"
+            "pushq %r12;\n"
+            "pushq %r13;\n"
+            "pushq %r14;\n"
+            "pushq %r15;\n");
+ 
    __asm__ __volatile__("movq %%rsp, %0;":"=g"(current_task->rsp));
    if(DEBUG) printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
   }
@@ -79,7 +96,6 @@ void switch_task()
   __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
 
-  if (current_task->new_proc) {// && current_task->id != 1)  {
     if(DEBUG) printf("Returning now");
     __asm__ __volatile__(
             "popq %r15;\n"
@@ -100,6 +116,7 @@ void switch_task()
 
     port_outb(0xA0, 0x20);
     port_outb(0x20, 0x20);
+  if (current_task->new_proc) {// && current_task->id != 1)  {
 
     if(DEBUG) printf("Proc: %d . Run session ct: %d. Run time: %d, Schedule freq: %d\n", 
         current_task->id, current_task->run_sessions_count,

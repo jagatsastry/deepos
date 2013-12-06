@@ -17,8 +17,9 @@ void dsh(){
        printf("\n%s",shellPrompt);
        
        //accept the input from the user
-       char command[ 256 ] = { 0 };
+       char command[ 256 ] = { 0 }; //"bin/hello" };
        int numBytes = scanf("%s", command );   
+
        //printk("%d",command); 
       if( command[0] == '\0'){ 
           printf("enterPressed");  
@@ -50,7 +51,7 @@ void dsh(){
        if (!bg)
          wait(&status); 
        printf("Returned from a long wait\n");
-       //while(1);
+  //     while(1);
    } 
 }
 

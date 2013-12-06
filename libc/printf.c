@@ -6,7 +6,6 @@ char* convertToHex2(unsigned long int number );
 
 int x = 10;
 int printf(const char *format, ...) {
-  //printf("xxxx %d\n", x);
      int  num = 0;
      char strToStore[1000];
      va_list argp;
@@ -158,7 +157,6 @@ char* convertToHex2(unsigned long int number )
         int curStringLoc = 2, hexRemainder, loc = 2;
         buffForHex[ 0 ] = '0';
         buffForHex[ 1 ] = 'x';
-                //printf("\nx %d\n", curStringLoc);
         do{
                 hexRemainder = number % 16;
                 number = number /16;
@@ -181,7 +179,6 @@ char* convertToHex2(unsigned long int number )
                         charToInsert = hexRemainder + '0';
 
                 }
-                //printf("\nx %d\n", curStringLoc);
                 buffForHex[ curStringLoc ] = charToInsert;
                 curStringLoc++;
         }while( number != 0 );
@@ -190,7 +187,6 @@ char* convertToHex2(unsigned long int number )
         //Now reverse the string to get the correct hex value
         while( loc < curStringLoc )
         {
-          //printf("y %d %d\n", loc, curStringLoc);
                 tempChar = buffForHex[ loc ];
                 buffForHex[ loc ] = buffForHex[ curStringLoc ];
                 buffForHex[ curStringLoc ] = tempChar;
