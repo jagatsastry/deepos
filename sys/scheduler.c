@@ -12,7 +12,6 @@ extern uint64_t i_virt_to_phy(uint64_t virt);
 extern page_directory_t* cur_pml4e_virt;
 extern struct tss_t tss;
 
-#define DEBUG 1
 void update_waiting_and_sleeping_tasks() {
   int i = 0;
   for (i = 0; i < MAX_TASKS; i++) {
@@ -60,7 +59,7 @@ void switch_task()
        return;
    }
   
-  if (current_task->run_time >= SCHEDULE_FREQUENCY)   {
+  if (!current_task->new_proc) { //current_task->run_time >= SCHEDULE_FREQUENCY)   {
    __asm__ __volatile__("movq %%rsp, %0;":"=g"(current_task->rsp));
    if(DEBUG) printf("Updated rsp of %d to %x: %d\n", current_task->id, current_task->rsp, __LINE__);
   }
@@ -76,18 +75,11 @@ void switch_task()
   tss.rsp0 = current_task->tss_rsp;
   if(DEBUG) printf("Try to switch to process %d\n", current_task->id);
   if(DEBUG) printf("%x\n", phy_pml4e);
-    printf("Task %d: USP %x, RSP %x\n", current_task->id, current_task->u_rsp, current_task->rsp);
+    if (DEBUG) printf("Task %d: USP %x, RSP %x\n", current_task->id, current_task->u_rsp, current_task->rsp);
   __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
-  if (current_task->rip) {
-      current_task->run_sessions_count++;
-      current_task->run_time += SCHEDULE_FREQUENCY;
- 
-      __asm__ __volatile__( "movq %0, %%rcx; \
-                        movq $0x12345, %%rax; \
-                        jmpq *%%rcx" : : "r"(current_task->rip));
-  }
-  if (current_task->run_time < SCHEDULE_FREQUENCY) {// && current_task->id != 1)  {
+
+  if (current_task->new_proc) {// && current_task->id != 1)  {
     if(DEBUG) printf("Returning now");
     __asm__ __volatile__(
             "popq %r15;\n"
@@ -114,6 +106,7 @@ void switch_task()
         current_task->run_time, SCHEDULE_FREQUENCY);
     current_task->run_sessions_count++;
     current_task->run_time += SCHEDULE_FREQUENCY;
+    current_task->new_proc = 0;
     __asm__ __volatile__("iretq" ::: "memory");
 
   }

@@ -25,7 +25,7 @@ void timer_handler(struct regs *r)
           //if (current_task->id == 2 && timer_ticks > TICK_PER_SECOND + 2)
            // kexit(30);
          // else 
-            printf("Calling switch task from timer interrup\n");
+         if (DEBUG)   printf("Calling switch task from timer interrup\n");
             switch_task();
           //printf("Back from switch task\n");
         }

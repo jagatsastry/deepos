@@ -4,7 +4,7 @@
 #include <idt.h>
 #include <task.h>
 
-void print( struct regsForPrint *regs)
+void print( struct regsForSyscall *regs)
 {
     char *strPtr = (char *)regs->rdx;
     int i=0;
@@ -17,14 +17,14 @@ void print( struct regsForPrint *regs)
     }
 }
 
-void exitSyscall(struct regsForPrint *regs)
+void exitSyscall(struct regsForSyscall *regs)
 {
     kexit(*(uint64_t*)regs->rdx);
 }
 
 
 //void enterToMemory( void *Addr, int typeOfArg)
-void enterToMemory( struct regsForPrint *regs) 
+void enterToMemory( struct regsForSyscall *regs) 
 {
       
      void *Addr = (void *)regs->rax;
@@ -57,7 +57,7 @@ void enterToMemory( struct regsForPrint *regs)
 }
 
 
-void sscanfSystemCall( struct regsForPrint *regs )
+void sscanfSystemCall( struct regsForSyscall *regs )
 {
     //const char * formatStr = ( const char *)regs->rdx;
     //void* memAddr = (void *)regs->rdx;
@@ -77,12 +77,12 @@ void sscanfSystemCall( struct regsForPrint *regs )
 
 extern void cpu_write_rcx();
 
-void sys_sleep(struct regsForPrint * s) {
+void sys_sleep(struct regsForSyscall * s) {
   printf("Sleeping for %ds\n", s->rdx);
   ksleep(*(uint64_t*)s->rdx);
 }
 
-void sys_waitpid(struct regsForPrint * s) {
+void sys_waitpid(struct regsForSyscall * s) {
   pid_t pid = (pid_t)s->rdx;
   pid_t *retPid = (uint32_t*)s->rsi;
   uint32_t *status =  *(uint32_t**)s->rcx;
@@ -90,25 +90,25 @@ void sys_waitpid(struct regsForPrint * s) {
 }
 
 
-void sys_fork(struct regsForPrint * s) {
+void sys_fork(struct regsForSyscall * s) {
   uint64_t* rval = (uint64_t*)s->rdx;
-  int ret = kfork();
+  int ret = kfork(s);
   *rval = ret;
   printf("Returning from fork\n");
 }
 
 extern void* i_virt_alloc();
 
-void sys_sbrk(struct regsForPrint * s) {
+void sys_sbrk(struct regsForSyscall * s) {
   uint64_t addr = (uint64_t)i_virt_alloc();
   *(uint64_t*)s->rdx = addr;
 }
 
-void sys_getpid(struct regsForPrint * s) {
+void sys_getpid(struct regsForSyscall * s) {
   *(uint64_t*)s->rdx = current_task->id;
 }
 
-void sys_execvpe(struct regsForPrint * s) {
+void sys_execvpe(struct regsForSyscall * s) {
   char *filename = (char*)s->rdx;
   char **argv = (char**)s->rcx;
   char **argp = (char**)s->rsi;
@@ -143,24 +143,17 @@ void syscall_handler( struct regsForSyscall * s)
        if( s->rbx > NUM_SYSCALLS )
          return;
        //printf("Inside Syscall handler\n");
-       void *location = syscalls[ s->rbx ];
+       void (*location)(struct regsForSyscall*) = 
+           (void (*)(struct regsForSyscall*))syscalls[ s->rbx ];
        //printf("\nInside fault handler Alok\n");
        //printf("\nrax : %p",s->rax);
        //printf("\nrbx %p",s->rbx);
        //printf("\nrcx : %x",s->rcx);
        //printf("\nrdx %p",s->rdx); 
-  
-      __asm__ __volatile__ ("pushq %1;\
-                              pushq %2;\
-                              pushq %3;\
-                              pushq %4;\
-                              movq %%rsp,%%rdi; \
-                              call *%5;\
-                              popq %%rax;\
-                              popq %%rax;\
-                              popq %%rax;\
-                              popq %%rax;\
-                              " : :"r" (s->rdi), "r" (s->rsi), "r" (s->rdx), "r" (s->rcx), "r" (s->rax),  "r" (location): "rcx");
+       location(s);
+      /* 
+      __asm__ __volatile__ ("call *%0;"
+                               : : "r" (location) );*/
 
 }
 

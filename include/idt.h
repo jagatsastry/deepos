@@ -9,10 +9,8 @@ struct regs
     uint32_t int_no, err_code;   
 };
 
-struct regsForSyscall
-{
-    uint64_t  r11, r10, r9, r8, rdi, rsi, rdx, rcx, rbx,rax ;
-    uint32_t int_no, err_code;
+struct regsForSyscall {
+    uint64_t  r15, r14, r13, r12, r11, r10, r9, r8, rbp, rdi, rsi, rdx, rcx, rbx,rax ;
 };
 
 struct regsForPrint{
