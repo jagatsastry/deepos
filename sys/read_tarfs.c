@@ -46,7 +46,7 @@ struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAdd
        uint64_t end = (uint64_t)&_binary_tarfs_end;
        struct posix_header_ustar *ptr;
        ptr = (struct posix_header_ustar *)start;
-       while(start < end - 512) {
+       while(start < end) {
           ptr = (struct posix_header_ustar *)start;
           if (DEBUG) printf("\nName %s",ptr->name);
           if (DEBUG) printf("\nSize %s",ptr->size);

@@ -22,6 +22,7 @@
 #define     SYS_OPENDIR 13
 #define     SYS_READDIR 14
 #define     SYS_CLOSEDIR 15
-#define     NUM_SYSCALLS 16
+#define     SYS_ULIMIT 16
+#define     NUM_SYSCALLS 17
 
 #endif

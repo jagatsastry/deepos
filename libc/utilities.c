@@ -74,9 +74,6 @@ void getFileName( DIR *dir , char *buff )
     dir->eofDirectory = 1;
 }
 
-
-
-
 void fetchName( const char *str1, int lenAdd ,char *buff){
    str1 = str1 + lenAdd;
   //char *buffPtr = buff;
@@ -90,9 +87,6 @@ void fetchName( const char *str1, int lenAdd ,char *buff){
   //printf("\nString returned from fetchname is %s",buffPtr);
 
 }
-
-
-
 
 int octal_decimal( int num ){
      int rem = 0, i=0 , t = 0; uint64_t  pow = 1, decimal = 0;
@@ -111,3 +105,11 @@ int octal_decimal( int num ){
      return decimal;
 }
 
+int atoi(char *p) {
+ int k = 0;
+ while (*p && (*p >= '0' && *p <= '9')) {
+   k = (k<<3)+(k<<1)+(*p)-'0';
+   p++;
+ }
+ return k;
+}

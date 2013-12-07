@@ -52,7 +52,7 @@ uint32_t kfork(struct regsForSyscall *regs) {
        memcpy((void*)par_virt, (void*)cur_addr, 4096);
      }
    }
-   
+   new_task->mem_limit = current_task->mem_limit;
    new_task->rsp = (uint64_t)regs; 
    new_task->u_rsp = current_task->u_rsp;
    new_task->current_heap_ptr = current_task->current_heap_ptr;

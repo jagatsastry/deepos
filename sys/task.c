@@ -115,7 +115,7 @@ void initialize_tasking()
    int i = 0;
    for (i = 0; i < MAX_TASKS; i++) {
      ready_queue[i].index = i;
-     ready_queue[i].mem_limit = DEFAULT_MEM_LIMIT;
+     ready_queue[i].mem_limit  = DEFAULT_MEM_LIMIT;
    }
    current_task = get_next_free_task();
    current_task->id = next_pid++;

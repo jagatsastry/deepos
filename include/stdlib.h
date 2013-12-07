@@ -21,5 +21,6 @@ pid_t wait(int *status);
 void *sbrk();
 pid_t getpid();
 void* malloc(size_t);
+int atoi(char *p);
 
 #endif

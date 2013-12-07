@@ -363,6 +363,16 @@ void sys_closedir( struct regsForSyscall *regs )
      *retval = 1;
 }
 
+void sys_ulimit(struct regsForSyscall *regs) {
+  size_t lim = (size_t)regs->rdx * 1024; //Input is in numkb
+  size_t taskCode = (uint64_t)regs->rcx;
+  
+  if (DEBUG) printf("Setting ulimit task code: %d, lim %x\n", taskCode, lim);
+  if (current_task->current_mem_usage > lim) 
+    printf("Err: Current memory usage is more than the limit being set.");
+  else current_task->mem_limit = lim;
+}
+
 static void *syscalls[NUM_SYSCALLS] =
 {
      print,
@@ -381,6 +391,7 @@ static void *syscalls[NUM_SYSCALLS] =
      sys_opendir,
      sys_readdir,
      sys_closedir,
+     sys_ulimit
 };
 
 
