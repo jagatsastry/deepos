@@ -128,6 +128,27 @@ void sys_execvpe(struct regsForSyscall * s) {
   if (DEBUG) printf("In syscall-execvpe. Going back\n");
 }
 
+void sys_ulimit(struct regsForSyscall *regs) {
+  size_t lim = (size_t)regs->rdx * 1024; //Input is in numkb
+  size_t taskCode = (uint64_t)regs->rcx;
+
+  if (DEBUG) printf("Setting ulimit task code: %d, lim %x\n", taskCode, lim);
+  if (current_task->current_mem_usage > lim)
+    printf("Err: Current memory usage is more than the limit being set.");
+  else current_task->mem_limit = lim;
+}
+
+void sys_kmalloc(struct regsForSyscall *regs) {
+  uint64_t size = (size_t)regs->rdx;
+  uint64_t *ptr = (uint64_t*)regs->rcx;
+  *ptr = (uint64_t)kmalloc(size);
+}
+
+
+
+struct fdRecord fdArr[100];
+DIR dirIntArr[ 100 ];
+
 int fdAllocArray[100] = {0};
 int curLocation = 0;
 int dirDesc[ 100 ] = {0};
@@ -262,6 +283,7 @@ void sys_opendir( struct regsForSyscall *regs){
     
     int *x  = (int *)regs->rcx; 
     char *dirname = (char *)regs->rax; 
+    DIR *dir = (DIR *)regs->rdx; 
     uint64_t start = (uint64_t)&_binary_tarfs_start;
     uint64_t end = (uint64_t)&_binary_tarfs_end;
     struct posix_header_ustar *ptr;
@@ -309,12 +331,13 @@ void sys_opendir( struct regsForSyscall *regs){
       for( int i = 1 ; i <= 99; i++ ){
              if( !dirDesc[ i ] ){
                   dirDesc[i] = 1;
-                  dirIntArr[i].fd = i;
-                  dirIntArr[i].startPos = start;
-                  dirIntArr[i].curPos = start;        
-                  dirIntArr[i].eofDirectory = 0;
-                  dirIntArr[i].prevFile[0] = '\0';
-                  strcpy( dirname , dirIntArr[i].dirPath );
+                  dir->fd = dirIntArr[i].fd = i;
+                  dir->startPos = dirIntArr[i].startPos = start;
+                  dir->curPos = dirIntArr[i].curPos = start;        
+                  dir->eofDirectory = dirIntArr[i].eofDirectory = 0;
+                  dir->prevFile[0] = dirIntArr[i].prevFile[0] = '\0';
+                  strcpy(  dirIntArr[i].dirPath, dirname );
+                  strcpy(  dir->dirPath , dirname); 
                   printf("\n Ding Dong");  
                   //*dir =  &dirIntArr[i];
                   //printf("Hello ptr %p",*dir); 
@@ -335,7 +358,8 @@ void sys_readdir( struct regsForSyscall *regs ){
     {
          *buff = '\0';
          return;
-    } 
+    }
+    //printf("\nJust before get FIle name"); 
     getFileName( dir, buff); 
 }
 
@@ -347,20 +371,73 @@ void sys_closedir( struct regsForSyscall *regs )
      *retval = 1;
 }
 
-void sys_ulimit(struct regsForSyscall *regs) {
-  size_t lim = (size_t)regs->rdx * 1024; //Input is in numkb
-  size_t taskCode = (uint64_t)regs->rcx;
-  
-  if (DEBUG) printf("Setting ulimit task code: %d, lim %x\n", taskCode, lim);
-  if (current_task->current_mem_usage > lim) 
-    printf("Err: Current memory usage is more than the limit being set.");
-  else current_task->mem_limit = lim;
-}
+void sys_ls( struct regsForSyscall *regs )
+{
 
-void sys_kmalloc(struct regsForSyscall *regs) {
-  uint64_t size = (size_t)regs->rdx;
-  uint64_t *ptr = (uint64_t*)regs->rcx;
-  *ptr = (uint64_t)kmalloc(size);
+    //int *x  = (int *)regs->rcx;
+    char *dirname = (char *)regs->rax;
+    //printf("\nDirname %s",dirname);
+    //while(1); 
+    //DIR *dir = (DIR *)regs->rdx;
+    uint64_t start = (uint64_t)&_binary_tarfs_start;
+    uint64_t end = (uint64_t)&_binary_tarfs_end;
+    char prevFile[100]= {0};
+
+    prevFile[0] = '.';
+    //printf("\n%s",prevFile); 
+    char buff[ 100 ] = {0};
+    struct posix_header_ustar *ptr;
+    int   size;
+    ptr = (struct posix_header_ustar *)start;
+    while( start < end  ){
+       ptr = (struct posix_header_ustar *)start;
+       if( contains(  ptr->name, dirname )){
+            //printf("\nEureka %s", ptr->name);
+            //printf("\nStrlen %d", strlen(dirname)); 
+            fetchName(ptr->name,strlen(dirname),buff) ;
+            //printf("\nKattu %s",buff); 
+            //printf("\nBuff %s \n preFile %s \n curName",buff, prevFile, ptr->name );
+            //while(1);  
+            if( strcmp(buff, prevFile) ){
+                 printf("\n%s",buff); 
+                 strcpy(prevFile, buff);
+                 //printf("PrevFile %s",prevFile);
+                 //while(1); 
+            } 
+            //while(1); 
+            //start = start + sizeof(struct posix_header_ustar );
+            //size = 0; int i = 0;
+            /*while( ptr->size[i] != '\0'){
+                size = size*10 + ( ptr->size[i] - '0');
+                i++ ;
+            }
+            if( size != 0 )
+            {
+                *x = -1;
+            }
+            size = octal_decimal( size );
+            isPresent = 1; */
+            //break;
+       }
+       size = 0; int i =0;
+       while( ptr->size[i] != '\0'){
+           size = size*10 + ( ptr->size[i] - '0');
+           i++ ;
+       }
+       size = octal_decimal( size );
+       int offset = 0;
+       if( size % 512 != 0 )
+       {
+           offset =   512 - size % 512;
+       }
+
+       start = start + sizeof(struct posix_header_ustar ) + size + offset;
+
+    }
+
+    //printf("\nHello World");
+
+    //while(1);
 }
 
 static void *syscalls[NUM_SYSCALLS] =
@@ -382,7 +459,8 @@ static void *syscalls[NUM_SYSCALLS] =
      sys_readdir,
      sys_closedir,
      sys_ulimit,
-     sys_kmalloc
+     sys_kmalloc,
+     sys_ls
 };
 
 
@@ -390,8 +468,10 @@ void syscall_handler( struct regsForSyscall * s)
 {
        //if (DEBUG) printf("SysCall handler begins\n");
        //if (DEBUG) printf("\nSyscall no %x",s->rbx);
-       if( s->rbx > NUM_SYSCALLS )
+       if( s->rbx > NUM_SYSCALLS ) {
+         printf("ERR: Invalid syscall %d\n", s->rbx);
          return;
+       }
        //if (DEBUG) printf("Inside Syscall handler\n");
        void (*location)(struct regsForSyscall*) =
            (void (*)(struct regsForSyscall*))syscalls[ s->rbx ];
@@ -402,5 +482,3 @@ void syscall_handler( struct regsForSyscall * s)
        //if (DEBUG) printf("\nrdx %p",s->rdx); 
        location(s);
 }
-
-

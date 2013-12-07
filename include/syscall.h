@@ -24,6 +24,8 @@
 #define     SYS_CLOSEDIR 15
 #define     SYS_ULIMIT 16
 #define     SYS_MALLOC 17
-#define     NUM_SYSCALLS 18
+#define     SYS_LS 18
+
+#define     NUM_SYSCALLS 19
 
 #endif
