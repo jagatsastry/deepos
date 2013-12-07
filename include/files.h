@@ -11,7 +11,7 @@ struct fdRecord{
      int eof;
 };
 
-struct fdRecord fdArr[100];
+//struct fdRecord fdArr[100];
 int curLocation ;
 
 typedef struct dirInt{
@@ -23,12 +23,12 @@ typedef struct dirInt{
    char prevFile[ 100 ];
 }DIR;
 
-DIR dirIntArr[ 100 ];
-  
+//DIR dirIntArr[ 100 ];
+void getSheBang( char *fname , char *buff );  
 int octal_decimal(int num );
 void fetchName(const char *str1, int lenAdd, char *buff);
 void getFileName(DIR *dir, char *buff);
-
+void funcForLS( const char *str );
 char returnedFileName[100]; 
 int octal_decimal( int num ); 
 int open( const char *fname ); 

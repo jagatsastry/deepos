@@ -396,7 +396,7 @@ void sys_ls( struct regsForSyscall *regs )
             //printf("\nStrlen %d", strlen(dirname)); 
             fetchName(ptr->name,strlen(dirname),buff) ;
             //printf("\nKattu %s",buff); 
-            //printf("\nBuff %s \n preFile %s \n curName",buff, prevFile, ptr->name );
+            //printf("\nBuff [%s]  preFile [%s] \n curName [%s]\n",buff, prevFile, ptr->name );
             //while(1);  
             if( strcmp(buff, prevFile) ){
                  printf("\n%s",buff); 
