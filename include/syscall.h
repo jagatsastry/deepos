@@ -6,7 +6,7 @@
 #define STR(x) STR1(x)
 
 
-#define     PRINT  0,
+#define     PRINT  0
 #define     EXITSYSCALL 1
 #define     SSCANFSYSTEMCALL 2
 #define     ENTERTOMEMORY 3
@@ -23,6 +23,7 @@
 #define     SYS_READDIR 14
 #define     SYS_CLOSEDIR 15
 #define     SYS_ULIMIT 16
-#define     NUM_SYSCALLS 17
+#define     SYS_MALLOC 17
+#define     NUM_SYSCALLS 18
 
 #endif

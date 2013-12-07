@@ -19,11 +19,19 @@ void test_sleep() {
   printf("Back from sleeping: PID %d\n", getpid());
 }
 
-int main(int argc, char* argv[]) {
+void print_arguments(int argc, char* argv[], char* argp[])  {
+  printf("argc value in hello: %d\n", argc);
+  printf("****Arguments****\n");
+  for (int i = 0; i < argc; i++)
+    printf("%d: %s\n", i, argv[i]);
+}
+
+
+int main(int argc, char* argv[], char* argp[]) {
+  print_arguments(argc, argv, argp);
   pid_t id = getpid();
   test_malloc();
   test_sleep();
-  
   printf("HAHAHA PID: %d\n", id);
   /*
   int pid = fork();

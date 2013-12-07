@@ -9,7 +9,6 @@
 #include <task.h>
 #include <sys/gdt.h>
 
-uint64_t elf_start;
 
 
 void print_posix_header( struct posix_header_ustar *p){
@@ -26,7 +25,7 @@ void print_posix_header( struct posix_header_ustar *p){
 extern uint64_t oct_to_dec(char *oct);
 extern char _binary_tarfs_start, _binary_tarfs_end;
 
-struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAddr) {
+struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAddr, uint64_t *elf_start_ptr) {
 
 /*
   char* header =  (char*)(&_binary_tarfs_start);
@@ -77,14 +76,14 @@ struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAdd
    struct posix_header_ustar *h = (struct posix_header_ustar*) start;
   
    programHeader pdr;
-   elf_start = (uint64_t) h; 
+   *elf_start_ptr = (uint64_t) h; 
    int x = Parse_ELF_Executable((char*)h, oct_to_dec((h-1)->size),exeFormatAddr,&pdr);
    if (DEBUG) printf("Status: %d\n", x);
 
    return h;
 }
 
-void map_exe_format(Exe_Format* exeFormatAddr){
+void map_exe_format(Exe_Format* exeFormatAddr, uint64_t *elf_start_ptr){
 
   if (DEBUG) printf("\nStart Address %x",exeFormatAddr->entryAddr);
   int i =0, cur_vma_idx = VMA_SEGMENT_START;
@@ -131,9 +130,9 @@ void map_exe_format(Exe_Format* exeFormatAddr){
 
        }
 
-	uint64_t ondiskstart = segment.offsetInFile + elf_start;
+	uint64_t ondiskstart = segment.offsetInFile + *elf_start_ptr;
 
-	uint64_t ondiskfinish = segment.offsetInFile + elf_start + segment.sizeInMemory;
+	uint64_t ondiskfinish = segment.offsetInFile + *elf_start_ptr + segment.sizeInMemory;
        	if (DEBUG) printf("\n ondiskstart: %x odiskfinish: %x", ondiskstart,ondiskfinish);
 	
 	uint64_t size = segment.sizeInMemory;

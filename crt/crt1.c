@@ -1,11 +1,9 @@
 #include <main.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-void _start(void) {
-	int argc = 1;
-	char* argv[10];
-	char* envp[10];
-	int res;
-	res = main(argc, argv, envp);
+void _start(int argc, char* argv[], char* envp[]) {
+  if (DEBUG) printf("In start arguments: %d %x %x\n", argc, argv, envp);
+	int res = main(argc, argv, envp);
 	exit(res);
 }

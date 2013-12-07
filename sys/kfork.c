@@ -55,7 +55,6 @@ uint32_t kfork(struct regsForSyscall *regs) {
    new_task->mem_limit = current_task->mem_limit;
    new_task->rsp = (uint64_t)regs; 
    new_task->u_rsp = current_task->u_rsp;
-   new_task->current_heap_ptr = current_task->current_heap_ptr;
    new_task->tss_rsp = current_task->tss_rsp;
    new_task->parent = (task_t*)current_task;
    new_task->new_proc = 1;

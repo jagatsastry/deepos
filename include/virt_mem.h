@@ -60,4 +60,7 @@ void* i_virt_alloc();
 uint64_t i_virt_to_phy(uint64_t virt);
 uint64_t i_phy_to_virt(uint64_t phy) ;
 page_directory_t* clone_page_directory(page_directory_t* tab_src, int level);  
+void *kmalloc(size_t size);
+void* brk();
+
 #endif

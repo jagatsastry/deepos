@@ -243,7 +243,7 @@ uint64_t i_phy_to_virt(uint64_t phy) {
 
 void* i_virt_alloc() {
   uint64_t phy_add = (uint64_t)page_alloc(); //Skip one page to reduce proximity
-  phy_add = (uint64_t)page_alloc();
+//  phy_add = (uint64_t)page_alloc();
 //  if (DEBUG) printf("\nkernel stack address physical:%x", stack);
   uint64_t virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
@@ -297,5 +297,44 @@ page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level)
   return tab_new;
 }
 
+void* kmalloc(size_t size) {
+  char *cur_ptr = current_task->cur_ptr;
+  char *heap_end = current_task->heap_end;
+  if (DEBUG) printf("Val of cur_ptr: %x addr: %x\n", (uint64_t)cur_ptr, (uint64_t)&cur_ptr);
+  if (DEBUG) printf("Val of heap_end: %x addr: %x\n", heap_end, &heap_end);
+  if (cur_ptr == NULL || cur_ptr + size > heap_end) {
+    cur_ptr = (char*)brk();
+    heap_end = (char*)cur_ptr + 4095;
+  }
+  if (cur_ptr == NULL) {
+    printf("Err: Out of memory\n");
+    return NULL;
+  }
+  char *temp = cur_ptr;
+  cur_ptr =  cur_ptr + size;
+  return (void*)temp;
+}
 
+
+void* brk() {
+  if (current_task->current_mem_usage + 4096 > current_task->mem_limit) {
+    printf("Err: Memory limit exceeded for PID %d\n", current_task->id);
+    return NULL;
+  }
+  uint64_t addr = (uint64_t)i_virt_alloc();
+  int i = 0;
+  for (; i < 10; i++) {
+    if (current_task->vma[i].start_addr == NULL) {
+      current_task->vma[i].start_addr = addr;
+      current_task->vma[i].end_addr = addr + 4095;
+      if (DEBUG) printf("PID: %d called sbrk. Inserting %x-%x into vma slot %d\n",
+        current_task->id, current_task->vma[i].start_addr,
+        current_task->vma[i].start_addr, i);
+      break;
+    }
+  }
+
+  current_task->current_mem_usage += 4096;
+  return (void*)addr;
+}
 

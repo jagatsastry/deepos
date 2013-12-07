@@ -105,25 +105,7 @@ void sys_fork(struct regsForSyscall * s) {
 extern void* i_virt_alloc();
 
 void sys_sbrk(struct regsForSyscall * s) {
-  if (current_task->current_mem_usage + 4096 > current_task->mem_limit) {
-    printf("Err: Memory limit exceeded for PID %d\n", current_task->id);
-    return;
-  }
-  uint64_t addr = (uint64_t)i_virt_alloc();
-  int i = 0;
-  for (; i < 10; i++) {
-    if (current_task->vma[i].start_addr == NULL) {
-      current_task->vma[i].start_addr = addr;
-      current_task->vma[i].end_addr = addr + 4095;
-      printf("PID: %d called sbrk. Inserting %x-%x into vma slot %d\n", 
-        current_task->id, current_task->vma[i].start_addr, 
-        current_task->vma[i].start_addr, i);
-      break;
-    }
-  }
-
-  current_task->current_mem_usage += 4096;
-  *(uint64_t*)s->rdx = addr;
+  *(uint64_t*)s->rdx = (uint64_t)brk();
 }
 
 void sys_getpid(struct regsForSyscall * s) {
@@ -135,6 +117,8 @@ void sys_execvpe(struct regsForSyscall * s) {
   char **argv = (char**)s->rcx;
   char **argp = (char**)s->rsi;
   int *ret = (int*)s->rsi;
+  if (DEBUG) printf("In syscall execvpe: Arguments:  %x %x\n",  argv, argp);
+  if (DEBUG) printf("In syscall execvpe: Arguments:   %s\n",   argv[0]);
 
   if (DEBUG) printf("syscall: Running execvpe of %s\n", filename);
   int argc = 0;
@@ -373,6 +357,12 @@ void sys_ulimit(struct regsForSyscall *regs) {
   else current_task->mem_limit = lim;
 }
 
+void sys_kmalloc(struct regsForSyscall *regs) {
+  uint64_t size = (size_t)regs->rdx;
+  uint64_t *ptr = (uint64_t*)regs->rcx;
+  *ptr = (uint64_t)kmalloc(size);
+}
+
 static void *syscalls[NUM_SYSCALLS] =
 {
      print,
@@ -391,7 +381,8 @@ static void *syscalls[NUM_SYSCALLS] =
      sys_opendir,
      sys_readdir,
      sys_closedir,
-     sys_ulimit
+     sys_ulimit,
+     sys_kmalloc
 };
 
 

@@ -44,6 +44,9 @@ typedef struct task
    int waiting_for_input;
    uint16_t index;                // Process ID.
    char program_name[64];
+   int argc;
+   char *argv[32];
+   char *envp[32];
    uint32_t exit_status;
    uint32_t waiting_pid_exit_status;
    uint8_t STATUS;
@@ -52,8 +55,8 @@ typedef struct task
    uint32_t run_time;
    uint32_t just_execd;
    vma_t vma[VMA_DEF_COUNT];
-   char *current_heap_ptr;
-
+   char *heap_end;
+   char *cur_ptr;
    uint32_t run_sessions_count; //Number of times it entered switch_task
    uint64_t rsp;       // Kernel stack and base pointers.
    uint64_t tss_rsp;

@@ -28,7 +28,7 @@ struct posix_header_ustar {
 
 void print_posix_header( struct posix_header_ustar * );
 
-struct posix_header_ustar* get_elf_file(char*, Exe_Format*);
+struct posix_header_ustar* get_elf_file(char*, Exe_Format*, uint64_t *elfStart);
 
 int matchString( char * , char *);
 

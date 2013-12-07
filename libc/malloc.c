@@ -2,18 +2,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char *heap_end;
-char *cur_ptr;
 void* malloc(size_t size) {
-  if (cur_ptr == NULL || cur_ptr + size > heap_end) {
-    cur_ptr = (char*)sbrk();
-    heap_end = (char*)cur_ptr + 4095;
-  }
-  if (cur_ptr == NULL) {
-    printf("Err: Out of memory\n");
-    return NULL;
-  }
-  char *temp = cur_ptr;
-  cur_ptr =  cur_ptr + size;
-  return (void*)temp;
+    uint64_t ret = 0;
+    __asm__ __volatile__ (
+              "movq $17, %%rbx;\
+               movq %0, %%rdx;\
+               movq %1, %%rcx;\
+               int $0x80;\
+               ":: "g"((uint64_t)size), "g"((uint64_t)&ret) :"rbx","rdx", "rcx", "memory");
+
+    return (void*)ret;
 }
+
