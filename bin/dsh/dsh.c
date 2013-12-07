@@ -2,20 +2,43 @@
 #include <stdlib.h>
 #include <string.h>
 
+int cd(char *cwd) {
+  return 1;
+}
 
+void setenv(char **envp, char *var, char *val) {
+  int i = 0;
+  for (; i < 64 && envp[i]; i++) {
+    if (!strcmp(envp[i], var)) 
+      strcpy(envp[i], strcat(strcat(var, "="), val));
+  }
+  envp[i] = malloc(128);
+  strcpy(envp[i], strcat(strcat(var, "="), val));
+}
+
+void printEnv(char **envp) {
+    printf("Env\n");
+
+    for (int i = 0; i < 64 && envp[i]; i++) {
+      printf("%s\n", envp[i]);
+    }
+}
+
+    
 char * strtok(char * str, char *comp);
 
-void dsh(){
-   int argc;
-   char *argv[ 64 ]; 
-      
+void dsh(int argc, char *argv[], char *envp[]) {
+
+   char cwd[128];
+   strcpy(cwd, "~");
    if (DEBUG) printf("Just entered dsh: PID %d\n", getpid());
    for( ; ; ){ 
-       char* shellPrompt = "dsh [/] $ "; //TODO: strcat with pwd
+       char* shellPrompt = strcat(strcat("dsh [", cwd), "/]$ "); 
        printf("\n%s",shellPrompt);
        
-       char command[ 256 ] = { 0 };
+       char *command = malloc(256); //[ 256 ] = { 0 };
        int numBytes = scanf("%s", command );   
+       command = trim(command);
 
       if( command[0] == '\0'){ 
           if (DEBUG) printf("enterPressed");  
@@ -25,6 +48,10 @@ void dsh(){
            printf("\nShell Error");
        }
        if (DEBUG) printf("\nCommand entered is %s",command);  
+       volatile int bg = command[strlen(command) - 1] == '&';
+       if (bg)
+         command[strlen(command) - 1] = 0;
+
        argc = 0;
        argv[ argc ] = strtok( command, " \t\n"); 
        while( argc++ < 64 )
@@ -32,14 +59,38 @@ void dsh(){
        for(int i = 0; i < argc;i++){
            if (DEBUG) printf("\n%s", argv[i]);
        }
+       if (DEBUG) printf("argc %d\n", argc);
+       if (!strcmp(argv[0], "setenv")) {
+         if (argc != 3) {
+           printf("Usage: setenv <ENV_VAR> <VAL>");
+           continue;
+         }
+         setenv(envp, argv[1], argv[2]);
+       }
+       if (!strcmp(command, "env")) {
+         printEnv(envp);
+         continue;
+       }
+       if (!strcmp(argv[0], "cd")) {
+         if (argc <= 1 || argc > 2) {
+           printf("Usage: cd <dir>");
+           continue;
+         }
+         if(cd(argv[1]))
+           strcpy(cwd, argv[1]);
+       }
+       if (!strcmp(argv[0], "sh")) {
+         if (argc > 1) {
+           printf("Usage: sh");
+           continue;
+         }
+         strcpy(argv[1], "dsh");
+       }
 
-       int bg = command[strlen(command) - 1] == '&';
-       if (bg)
-         command[strlen(command) - 1] = 0;
 
        int pid = fork();
        if (pid == 0) {
-           if(execvpe(argv[0], argv, argv) < 0){
+           if(execvpe(argv[0], argv, envp) < 0){
                printf("dsh: %s: command not found\n", command);
                return;
            } 
@@ -47,69 +98,19 @@ void dsh(){
            int status = 0;
            if (!bg) {
              //waitpid(pid, (uint32_t*)&status, 0); 
-             wait(&status); 
-           }
+             waitpid(pid, &status, 0); 
+             //wait(&status);
+           } else
+            printf("[bg]: %d\n", pid);
+            bg = 0;
            if (DEBUG) printf("Returned from a long wait\n");
        }
-   } 
+   }
 }
 
-char * strtok(char * str, char *comp)
-{
-	static int pos;
-	static char *s;	
-	int  start = pos;
 
-	// Copying the string for further calls of strtok
-	if(str != NULL){ 
-		s = str;
-                pos = 0;
-                if (DEBUG) printf("\nNew command entered %s",str); 
-                start = pos; 
-                if( *str == '\r')
-                   return NULL; 
-        }	
-	//i = 0;
-	int j = 0;
-	//While not end of string
-	while(s[pos] != '\0')
-	{
-		j = 0;	
-		//Comparing of one of the delimiter matches the character in the string
-		while(comp[j] != '\0')
-		{		
-			//Pos point to the next location in the string that we have to read
-			if(s[pos] == comp[j])
-			{
-				//Replace the delimter by \0 to break the string
-				s[pos] = '\0';
-				pos = pos+1;				
-				//Checking for the case where there is no relevant string before the delimeter.
-				//start specifies the location from where we have to start reading the next character
-				if(s[start] != '\0')
-					return (&s[start]);
-				else
-				{
-					// Move to the next string after the delimiter
-					start = pos;
-					// Decrementing as it will be incremented at the end of the while loop
-					pos--;
-					break;
-				}
-			}
-			j++;
-		}
-		pos++;		
-	}//End of Outer while
-	s[pos] = '\0';
-	if(s[start] == '\0')
-		return NULL;
-	else
-		return &s[start];
-}
-
-int main() {
-  dsh();
+int main(int argc, char *argv[], char *envp[]) {
+  dsh(argc, argv, envp);
   return 0;
 }
 

@@ -15,13 +15,12 @@ void updateKeyPressEvent() {
     }
 }
 
+int timer_tick = 0;
 void timer_handler(struct regs *r)
 {
-    static int timer_ticks = 0;
-
-    timer_ticks++;
-    if ((timer_ticks-1) % TICK_PER_SECOND == 0) {
-        print_status_bar(timer_ticks);
+    timer_tick++;
+    if ((timer_tick-1) % TICK_PER_SECOND == 0) {
+        print_status_bar(timer_tick);
         if (current_task) {
           updateKeyPressEvent();
           update_waiting_and_sleeping_tasks();

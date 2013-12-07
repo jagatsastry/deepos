@@ -19,7 +19,11 @@ int execvpe(const char* filename, char *const argv[], char *const argp[]) {
     return ret;
 }
 
+int execve(const char* filename, char *const argv[]) {
+  return execvpe(filename, argv, NULL);
+}
+
 int exec(const char *filename) {
   char *const argv[] = {(char *const)filename, NULL};
-  return execvpe(filename, argv, argv);
+  return execve(filename, argv);
 }

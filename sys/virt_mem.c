@@ -243,7 +243,7 @@ uint64_t i_phy_to_virt(uint64_t phy) {
 
 void* i_virt_alloc() {
   uint64_t phy_add = (uint64_t)page_alloc(); //Skip one page to reduce proximity
-//  phy_add = (uint64_t)page_alloc();
+  phy_add = (uint64_t)page_alloc();
 //  if (DEBUG) printf("\nkernel stack address physical:%x", stack);
   uint64_t virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
@@ -296,6 +296,17 @@ page_directory_t* clone_page_directory_old(page_directory_t* tab_src, int level)
   }
   return tab_new;
 }
+void add_to_vma(char *start, char *end) {
+
+   for (int i = 0; i <10; i++) {
+     if (current_task->vma[i].start_addr == NULL) {
+      current_task->vma[i].start_addr = (uint64_t)start;
+      current_task->vma[i].end_addr = (uint64_t)end;
+      if (DEBUG) printf("Added %x-%x to VMA for proc %d\n", start, end, current_task->id);
+      break;
+     }
+  }
+}
 
 void* kmalloc(size_t size) {
   char *cur_ptr = current_task->cur_ptr;
@@ -305,6 +316,7 @@ void* kmalloc(size_t size) {
   if (cur_ptr == NULL || cur_ptr + size > heap_end) {
     cur_ptr = (char*)brk();
     heap_end = (char*)cur_ptr + 4095;
+    add_to_vma(cur_ptr, heap_end);
   }
   if (cur_ptr == NULL) {
     printf("Err: Out of memory\n");

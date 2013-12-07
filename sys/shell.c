@@ -11,9 +11,16 @@ void create_shell() {
     char *fnm = "bin/init_sh";
     char *filename = (char*)kmalloc(strlen(fnm) + 1);
     strcpy(filename, fnm); 
-    char *argv[] = {(char*)filename, NULL};
-    kexecvpe("bin/init_sh", 1, argv, argv);
+
+    char **envp = kmalloc(64 * sizeof(char*));
+    for (int i = 0; i < 64; i++)
+      envp[i] = NULL;
+    envp[0] = kmalloc(128);
+    strcpy(envp[0], "PATH=bin");
+
+    char **argv = kmalloc(64 * sizeof(char*));
+    argv[0] = filename;
+    kexecvpe("bin/init_sh", 1, argv, envp);
     printf("WARNING: Back after exec of shell");
     return;
 }
-

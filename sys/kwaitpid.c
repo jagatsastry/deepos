@@ -6,6 +6,7 @@
 pid_t kwaitpid(pid_t pid, uint32_t *status) {
   current_task->STATUS = TASK_WAITING_ON_PID;
   current_task->pid_waiting_for = pid;
+  current_task->time_at_wait = timer_tick;
     
   //__asm__ __volatile__("movq %%rsp, %0" : "=r"(current_task->rsp));
   //Simple trick: We have set the rip and rsp. 

@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
   printf("WHATEVER HAHAHA PID: %d\n", id);
   int pid = fork();
   if (pid != 0) {
-    uint32_t status;
+    int status;
     printf("WHATEVER Waiting for child %d\n", pid);
     int pid1 = waitpid(pid, &status, 0);
     printf("WHATEVER Child %d supposedly exited with status %d\n", pid1, status);

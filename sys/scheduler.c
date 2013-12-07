@@ -21,14 +21,14 @@ void update_waiting_and_sleeping_tasks() {
       if (task->sleeping_time  <= 0) {
         task->sleeping_time = 0;
         task->STATUS = TASK_READY;
-        printf ("Setting %d to ready", task->id);
+         if (DEBUG) printf ("Setting %d to ready", task->id);
       }
     }
     if (task->STATUS == TASK_WAITING_ON_PID) {
       task_t *wait_task = (task_t*)0;
       if (task->pid_waiting_for == -1) {
         wait_task = get_children(task->id);
-        while(wait_task && (wait_task->STATUS != TASK_ZOMBIE)) 
+        while(wait_task && (wait_task->STATUS != TASK_ZOMBIE) && (wait_task->end_time > task->time_at_wait)) 
           wait_task = wait_task->next;
       }
       else 

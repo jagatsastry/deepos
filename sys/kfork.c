@@ -35,11 +35,21 @@ uint32_t kfork(struct regsForSyscall *regs) {
    task_t *parent_task = (task_t*)current_task;
    task_t *new_task = get_next_free_task();
    new_task->id = next_pid++;
+
+   char **envp = (char**)current_task->envp;
+   int i = 0;
+   for (;  envp && envp[i]; i++) {
+     if (DEBUG) printf("execve: Copying envp %d %s\n", i, envp[i]);
+     new_task->envp[i] = (char*)kmalloc(strlen(envp[i]) + 1);
+     strcpy(new_task->envp[i], envp[i]);
+   }
+   new_task->envp[i] = NULL;
+
    strcpy(new_task->program_name, parent_task->program_name);
 
    new_task->pml4e = clone_page_directory(current_task->pml4e, 4);
-   int i = 0;
-   for (; i <10; i++) {
+   
+   for (int i = 0; i <10; i++) {
      if (current_task->vma[i].start_addr == NULL)
        continue;
      new_task->vma[i].start_addr = current_task->vma[i].start_addr;

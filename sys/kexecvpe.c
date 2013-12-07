@@ -14,26 +14,68 @@ extern void* i_virt_alloc();
 extern void print_current_task();
 extern uint64_t i_virt_to_phy(uint64_t virt);
 
-uint64_t temp_rsp;
+char* addSlash(char *curPath) {
+      if (curPath[strlen(curPath)] !=  '/')
+        curPath = strcat(curPath, "/");
+      return curPath;
+}
+
+char** getPath(char **envp) {
+  char **path = kmalloc(64 * sizeof(char*));
+
+  int ct = 0;
+  for (int i = 0;  envp && envp[i]; i++) {
+    if (startsWith(envp[i], "PATH=")) {
+      char *pathStr = envp[i] + 5;
+
+      path[ct] = strtok(pathStr, ";");
+      path[ct] = addSlash(path[ct]);
+
+      while( ct++ < 63 ) {
+           if( !(path[ct] = strtok(NULL, ";" )) ) break;
+           path[ct] = addSlash(path[ct]);
+      }
+      for(int j = 0; j < ct;j++){
+         if (DEBUG) printf("\nPATH %d: %s", i, path[i]);
+      }
+    }
+  }
+  path[ct] = NULL;
+  return path;
+}
+
 int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
   current_task->argc = argc;
   int i = 0;
   for (; argv && argv[i]; i++) {
+    if (DEBUG) printf("execve: %d \n", i);
+    if (DEBUG) printf("execve: Copying argv %d %s\n", i, argv[i]);
     current_task->argv[i] = (char*)kmalloc(strlen(argv[i]) + 1);
     strcpy(current_task->argv[i], argv[i]);
   }
   current_task->argv[i] = NULL;
   i = 0;
   for (;  envp && envp[i]; i++) {
+    if (DEBUG) printf("execve: Copying envp %d %s\n", i, envp[i]);
     current_task->envp[i] = (char*)kmalloc(strlen(envp[i]) + 1);
     strcpy(current_task->envp[i], envp[i]);
   }
   current_task->envp[i] = NULL;
 
-  struct Exe_Format exeFormat;
   if (DEBUG) printf("Running kexecvpe of %s\n", filename);
+  struct Exe_Format exeFormat;
   uint64_t elf_start = 0;
   struct  posix_header_ustar *tar_p = get_elf_file(filename, &exeFormat, &elf_start);
+  if (tar_p == NULL) {
+    if (DEBUG) printf("%s not found. Searching in PATH\n", filename); 
+    char ** path = getPath(envp);
+    for (int i = 0; path && path[i]; i++) {
+      filename = strcat(path[i], filename);
+      if (DEBUG) printf("Searching %s\n", filename);
+      tar_p = get_elf_file(filename, &exeFormat, &elf_start);
+    }
+//    if(tar_p != NULL) printf("cmd: %s\n", 
+  }
   if (tar_p == NULL) {
     if (DEBUG) printf ("Going back from kexecve\n");
     return -1;
@@ -53,7 +95,6 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
 
   map_exe_format(&exeFormat, &elf_start);
   if (DEBUG) printf("Preparing the stack\n");
-  __asm__ __volatile__("movq %%rsp, %0;":"=g"(temp_rsp));
   current_task->execEntryAddress = exeFormat.entryAddr;
   current_task->u_rsp = (uint64_t)current_task->vma[VMA_USER_STACK_IDX].end_addr;
   current_task->rsp = (uint64_t)current_task->vma[VMA_KERNEL_STACK_IDX].end_addr;
