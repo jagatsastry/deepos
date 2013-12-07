@@ -243,11 +243,21 @@ uint64_t i_phy_to_virt(uint64_t phy) {
 
 void* i_virt_alloc() {
   uint64_t phy_add = (uint64_t)page_alloc(); //Skip one page to reduce proximity
-  phy_add = (uint64_t)page_alloc();
-//  if (DEBUG) printf("\nkernel stack address physical:%x", stack);
   uint64_t virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
   memset((void*)virt_add, 0, 4096);
+
+  phy_add = (uint64_t)page_alloc();
+  virt_add = i_phy_to_virt(phy_add );
+  map_process(virt_add, phy_add);
+  memset((void*)virt_add, 0, 4096);
+
+  phy_add = (uint64_t)page_alloc();
+  virt_add = i_phy_to_virt(phy_add );
+  map_process(virt_add, phy_add);
+  memset((void*)virt_add, 0, 4096);
+
+//  if (DEBUG) printf("\nkernel stack address physical:%x", stack);
   return (void*)virt_add;
   //if (DEBUG) printf("\nAllocated virtual address %x \n  mapped to physical address %x", virtual_address_k, stack);
 }
@@ -323,7 +333,9 @@ void* kmalloc(size_t size) {
     return NULL;
   }
   char *temp = cur_ptr;
-  cur_ptr =  cur_ptr + size;
+  current_task->cur_ptr = cur_ptr;
+  current_task->heap_end = heap_end;
+  current_task->cur_ptr =  current_task->cur_ptr + size;
   return (void*)temp;
 }
 

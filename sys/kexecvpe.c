@@ -93,6 +93,7 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
   for (i = 0; i < VMA_SEGMENT_START; i++)
     current_task->vma[i].end_addr = current_task->vma[i].start_addr + 4095;
 
+  //strcpy((char*)current_task->temp[0], filename);
   map_exe_format(&exeFormat, &elf_start);
   if (DEBUG) printf("Preparing the stack\n");
   current_task->execEntryAddress = exeFormat.entryAddr;
@@ -100,9 +101,9 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
   current_task->rsp = (uint64_t)current_task->vma[VMA_KERNEL_STACK_IDX].end_addr;
   if (DEBUG) printf("In execve PID: %d. USP %x RSP %x\n", current_task->id, current_task->u_rsp, current_task->rsp);
   current_task->tss_rsp = (uint64_t)current_task->rsp;
-  strcpy((char*)current_task->program_name, filename);
   tss.rsp0 = (uint64_t)current_task->rsp;
   if (DEBUG) printf("Move the stack temporarily\n");
+  //strcpy((char*)current_task->program_name, current_task->temp[0]);
   print_current_task();
 
   uint64_t phy_pml4e = i_virt_to_phy((uint64_t)current_task->pml4e);

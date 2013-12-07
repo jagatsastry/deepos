@@ -2,7 +2,7 @@
 #define _DEFS_H
 
 #define NULL 0
-#define DEBUG 1
+#define DEBUG 0
 
 typedef unsigned long __uint64_t;
 typedef __uint64_t uint64_t;

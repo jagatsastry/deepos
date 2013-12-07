@@ -19,7 +19,7 @@
 #define TASK_ZOMBIE 4
 
 //4MB limit per process
-#define DEFAULT_MEM_LIMIT 4096 * 1024 
+#define DEFAULT_MEM_LIMIT 4096 * 4096 
 
 #define MAX_TASKS 100
 

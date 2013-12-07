@@ -9,15 +9,17 @@ int cd(char *cwd) {
 void setenv(char **envp, char *var, char *val) {
   int i = 0;
   for (; i < 64 && envp[i]; i++) {
-    if (!strcmp(envp[i], var)) 
+    if (startsWith(envp[i], var)) {
       strcpy(envp[i], strcat(strcat(var, "="), val));
+      return;
+    }
   }
   envp[i] = malloc(128);
   strcpy(envp[i], strcat(strcat(var, "="), val));
 }
 
 void printEnv(char **envp) {
-    printf("Env\n");
+    //printf("Env\n");
 
     for (int i = 0; i < 64 && envp[i]; i++) {
       printf("%s\n", envp[i]);
@@ -28,6 +30,8 @@ void printEnv(char **envp) {
 char * strtok(char * str, char *comp);
 
 void dsh(int argc, char *argv[], char *envp[]) {
+   strcpy(envp[0], "PATH=bin");
+   envp[1] = NULL;
 
    char cwd[128];
    strcpy(cwd, "~");
@@ -66,6 +70,7 @@ void dsh(int argc, char *argv[], char *envp[]) {
            continue;
          }
          setenv(envp, argv[1], argv[2]);
+         continue;
        }
        if (!strcmp(command, "env")) {
          printEnv(envp);
@@ -78,6 +83,7 @@ void dsh(int argc, char *argv[], char *envp[]) {
          }
          if(cd(argv[1]))
            strcpy(cwd, argv[1]);
+           continue;
        }
        if (!strcmp(argv[0], "sh")) {
          if (argc > 1) {
@@ -85,6 +91,7 @@ void dsh(int argc, char *argv[], char *envp[]) {
            continue;
          }
          strcpy(argv[1], "dsh");
+         continue;
        }
 
 
