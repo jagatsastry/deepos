@@ -6,6 +6,7 @@ obj/*/*
 kernel
 *.swp
 rootfs/*
+tarfs
 rootfs/bin/*.o
 rootfs/lib/*.o
 rootfs/lib/*.a
