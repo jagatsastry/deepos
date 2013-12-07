@@ -1,6 +1,7 @@
 /*Adapted from Rishabh Sharma's SBU OS. Distriuted under Lesser GPL license*/
 #include<stdio.h>
 #include<defs.h>
+#include <task.h>
 #include <stdlib.h>
 #include<virt_mem.h>
 #include<phy_mem.h>
@@ -72,10 +73,12 @@ void setup_kernel_stack(){
 }
 
 void map_process(uint64_t virtual_address, uint64_t physical_address){
-  map_process_specific(virtual_address, physical_address, cur_pml4e_virt);
+  map_process_specific(virtual_address, physical_address, cur_pml4e_virt, (task_t*)current_task);
 }
 
-void map_process_specific(uint64_t virtual_address, uint64_t physical_address, page_directory_t * pml4e){
+void map_process_specific(uint64_t virtual_address, uint64_t physical_address, page_directory_t * pml4e, task_t *task){
+  if(task)
+    task->current_mem_usage += 4096;
 
   struct page_directory_t *pdpt;
   struct page_directory_t  *pdt;

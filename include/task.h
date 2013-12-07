@@ -18,6 +18,9 @@
 #define TASK_SLEEPING 3
 #define TASK_ZOMBIE 4
 
+//4MB limit per process
+#define DEFAULT_MEM_LIMIT 4096 * 1024 
+
 #define MAX_TASKS 100
 
 typedef struct vma_t {
@@ -27,12 +30,17 @@ typedef struct vma_t {
 } vma_t;
 
 
+#define VMA_DEF_COUNT 100
+struct page_directory_t;
+
 // This structure defines a 'task' - a process.
 typedef struct task
 {
    struct task* parent;
    pid_t id;                // Process ID.
    int new_proc;
+   size_t mem_limit;
+   size_t current_mem_usage;
    int waiting_for_input;
    uint16_t index;                // Process ID.
    char program_name[64];
@@ -43,7 +51,7 @@ typedef struct task
    uint32_t pid_waiting_for;
    uint32_t run_time;
    uint32_t just_execd;
-   vma_t vma[10];
+   vma_t vma[VMA_DEF_COUNT];
    char *current_heap_ptr;
 
    uint32_t run_sessions_count; //Number of times it entered switch_task
@@ -51,7 +59,7 @@ typedef struct task
    uint64_t tss_rsp;
    uint64_t u_rsp; //User stack and base pointer
 
-   page_directory_t *pml4e; // Page directory.
+   struct page_directory_t *pml4e; // Page directory.
    struct task *next;  //To be used in a linked list
    uint64_t execEntryAddress; //Entry address of executable when doing exec
    uint64_t temp[10];

@@ -13,7 +13,6 @@ void print( struct regsForSyscall *regs)
 {
     char *strPtr = (char *)regs->rdx;
     int i=0;
-    //int len = (int)regs->rcx;
     if (DEBUG) printf("%p",strPtr);
     while( strPtr[i] != '\0' )
     {
@@ -106,7 +105,24 @@ void sys_fork(struct regsForSyscall * s) {
 extern void* i_virt_alloc();
 
 void sys_sbrk(struct regsForSyscall * s) {
+  if (current_task->current_mem_usage + 4096 > current_task->mem_limit) {
+    printf("Err: Memory limit exceeded for PID %d\n", current_task->id);
+    return;
+  }
   uint64_t addr = (uint64_t)i_virt_alloc();
+  int i = 0;
+  for (; i < 10; i++) {
+    if (current_task->vma[i].start_addr == NULL) {
+      current_task->vma[i].start_addr = addr;
+      current_task->vma[i].end_addr = addr + 4095;
+      printf("PID: %d called sbrk. Inserting %x-%x into vma slot %d\n", 
+        current_task->id, current_task->vma[i].start_addr, 
+        current_task->vma[i].start_addr, i);
+      break;
+    }
+  }
+
+  current_task->current_mem_usage += 4096;
   *(uint64_t*)s->rdx = addr;
 }
 

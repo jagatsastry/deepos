@@ -19,7 +19,6 @@ uint64_t temp_rsp;
 int kexecvpe(char* filename, int argc, char *argv[], char *argp[]) {
   struct Exe_Format exeFormat;
   if (DEBUG) printf("Running kexecvpe of %s\n", filename);
-  //__asm__ __volatile__("cli");
   struct  posix_header_ustar *tar_p = get_elf_file(filename, &exeFormat);
   if (tar_p == NULL) {
     if (DEBUG) printf ("Going back from kexecve\n");
@@ -35,7 +34,6 @@ int kexecvpe(char* filename, int argc, char *argv[], char *argp[]) {
     current_task->vma[i].start_addr = 0;
   current_task->vma[VMA_USER_STACK_IDX].start_addr = (uint64_t)i_virt_alloc(); //User stack
   current_task->vma[VMA_KERNEL_STACK_IDX].start_addr = (uint64_t)i_virt_alloc(); //Kernel stack
-  current_task->vma[VMA_HEAP_IDX].start_addr = (uint64_t)i_virt_alloc(); //Heap
   
   for(i = 0; i < VMA_SEGMENT_START; i++)
     current_task->vma[i].end_addr = current_task->vma[i].start_addr + 4095;
@@ -55,11 +53,9 @@ int kexecvpe(char* filename, int argc, char *argv[], char *argp[]) {
 
   uint64_t phy_pml4e = i_virt_to_phy((uint64_t)current_task->pml4e);
 
-  __asm__ __volatile__( "movq %0, %%cr3" : /* no output */ : "r" (phy_pml4e) );
-  current_task->current_heap_ptr = (char*)current_task->vma[VMA_HEAP_IDX].start_addr;
-//  current_task->new_proc;
-    port_outb(0xA0, 0x20);
-        port_outb(0x20, 0x20);
+  __asm__ __volatile__( "movq %0, %%cr3" : : "r" (phy_pml4e) );
+  port_outb(0xA0, 0x20);
+  port_outb(0x20, 0x20);
   __asm__ __volatile__( "movq %0, %%rsp ": : "m"(current_task->rsp) : "memory" );
   __asm volatile("pushq $0x23\n\t"
                  "pushq %0\n\t"

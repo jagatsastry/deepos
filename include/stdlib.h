@@ -20,5 +20,6 @@ pid_t waitpid(pid_t pid, uint32_t *status, int options);
 pid_t wait(int *status);
 void *sbrk();
 pid_t getpid();
+void* malloc(size_t);
 
 #endif

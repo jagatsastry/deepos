@@ -1,9 +1,8 @@
-/*Adapted from Rishabh Sharma's SBU OS. Distriuted under Lesser GPL license*/
-
 #ifndef _VIRMEMMAN_H
 #define _VIRMEMMAN_H
 
 #include<defs.h>
+#include <task.h>
 
 #define PRESENT 0x1        
 #define WRITABLE 0x2       
@@ -38,7 +37,8 @@ void load_cr3();
 void load_kernel_stack();
 void setup_kernel_stack();
 void map_process(uint64_t , uint64_t);
-void map_process_specific(uint64_t, uint64_t, page_directory_t *);
+struct task;
+void map_process_specific(uint64_t, uint64_t, page_directory_t *, struct task*);
 
 
 #define PML4E_INDEX(x) (((x) >> 39) & 0x1FF)

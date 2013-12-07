@@ -1,11 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-int main(int argc, char* argv[]) {
-  printf("*********Sleeping********\n");
+void test_malloc() {
+  printf("Testing malloc\n");
+  char *str = "string on heap\n";
+  for (int i = 0; i < 1; i++) {
+    char *test_str = (char*)malloc(20);
+    strcpy(test_str, str);
+    printf("Following str starts at %x\n", (uint64_t)test_str);
+    printf(test_str);
+  }
+}
+  
+void test_sleep() {
+  printf("*********Sleeping******** for 2 sec\n");
   sleep(2);
   printf("Back from sleeping: PID %d\n", getpid());
+}
+
+int main(int argc, char* argv[]) {
   pid_t id = getpid();
+  test_malloc();
+  test_sleep();
   
   printf("HAHAHA PID: %d\n", id);
   /*

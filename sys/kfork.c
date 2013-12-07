@@ -38,36 +38,29 @@ uint32_t kfork(struct regsForSyscall *regs) {
    strcpy(new_task->program_name, parent_task->program_name);
 
    new_task->pml4e = clone_page_directory(current_task->pml4e, 4);
-  //new_task->temp[3] = _read_rip();
-   //if (current_task == parent_task)
-   //{
-      // __asm__ __volatile__("movq %%rsp, %0" : "=r"(new_task->u_rsp));
-    //  if (DEBUG) printf("In the parent task %d\n", current_task->id);
-     // if (DEBUG) printf("RSP is %x\n", temp_rsp);
-       int i = 0;
-       for (; i <10; i++) {
-         if (current_task->vma[i].start_addr == NULL)
-           continue;
-         new_task->vma[i].start_addr = current_task->vma[i].start_addr;
-         new_task->vma[i].end_addr = current_task->vma[i].end_addr;
+   int i = 0;
+   for (; i <10; i++) {
+     if (current_task->vma[i].start_addr == NULL)
+       continue;
+     new_task->vma[i].start_addr = current_task->vma[i].start_addr;
+     new_task->vma[i].end_addr = current_task->vma[i].end_addr;
 
-         uint64_t cur_addr = new_task->vma[i].start_addr;
-         for(; cur_addr < new_task->vma[i].end_addr; cur_addr += 4096) {
-           uint64_t par_virt = (uint64_t)i_virt_alloc();
-           map_process_specific(cur_addr, i_virt_to_phy(par_virt), new_task->pml4e);
-           memcpy((void*)par_virt, (void*)cur_addr, 4096);
-         }
-       }
-       
-       new_task->rsp = (uint64_t)regs; //current_task->rsp;
-       new_task->u_rsp = current_task->u_rsp;
-       //new_task->u_rsp = current_task->u_rsp;
-       new_task->current_heap_ptr = current_task->current_heap_ptr;
-       new_task->tss_rsp = current_task->tss_rsp;
-       new_task->parent = (task_t*)current_task;
-       new_task->new_proc = 1;
-       new_task->STATUS = TASK_READY;
-       return new_task->id;
+     uint64_t cur_addr = new_task->vma[i].start_addr;
+     for(; cur_addr < new_task->vma[i].end_addr; cur_addr += 4096) {
+       uint64_t par_virt = (uint64_t)i_virt_alloc();
+       map_process_specific(cur_addr, i_virt_to_phy(par_virt), new_task->pml4e, new_task);
+       memcpy((void*)par_virt, (void*)cur_addr, 4096);
+     }
+   }
+   
+   new_task->rsp = (uint64_t)regs; 
+   new_task->u_rsp = current_task->u_rsp;
+   new_task->current_heap_ptr = current_task->current_heap_ptr;
+   new_task->tss_rsp = current_task->tss_rsp;
+   new_task->parent = (task_t*)current_task;
+   new_task->new_proc = 1;
+   new_task->STATUS = TASK_READY;
+   return new_task->id;
 }
 
 

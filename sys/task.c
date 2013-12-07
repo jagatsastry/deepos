@@ -113,8 +113,10 @@ void initialize_tasking()
 {
   //__asm__ __volatile__("cli");
    int i = 0;
-   for (i = 0; i < MAX_TASKS; i++)
+   for (i = 0; i < MAX_TASKS; i++) {
      ready_queue[i].index = i;
+     ready_queue[i].mem_limit = DEFAULT_MEM_LIMIT;
+   }
    current_task = get_next_free_task();
    current_task->id = next_pid++;
    current_task->pml4e = cur_pml4e_virt;
