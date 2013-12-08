@@ -1,8 +1,8 @@
 #include <defs.h>
 
 /*Waits for a pid to end*/
-pid_t waitpid(pid_t pid, int* status, int options) {
-    pid_t ret = -1;
+pid_tt waitpid(pid_tt pid, int* status, int options) {
+    pid_tt ret = -1;
     __asm__ __volatile__ ( 
                "movq $0x7, %%rbx;\
                movq %0, %%rdx;\
@@ -16,6 +16,6 @@ pid_t waitpid(pid_t pid, int* status, int options) {
 
 
 /*Waits for a child to end*/
-pid_t wait(int* status) {
+pid_tt wait(int* status) {
   return waitpid(-1, status, 0);
 }

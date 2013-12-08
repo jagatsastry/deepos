@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-size_t strlen(const char *str)
+size_tt strlen(const char *str)
 {
-    size_t len = 0;
+    size_tt len = 0;
     for(len = 0; str[len]; len++);
     return len;
 }

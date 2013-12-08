@@ -82,7 +82,7 @@ task_t* get_next_free_task() {
   while(1);
 }
 
-task_t* get_children(pid_t pid) {
+task_t* get_children(pid_tt pid) {
   task_t *children = (task_t*)0;
   int i;
   if (DEBUG == 2) printf("Searching for children\n");
@@ -97,7 +97,7 @@ task_t* get_children(pid_t pid) {
   return children;
 }
 
-task_t* get_task(pid_t pid) {
+task_t* get_task(pid_tt pid) {
   int i;
   for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].id == pid)
@@ -155,8 +155,8 @@ uint32_t getpid() {
   return current_task->id;
 }
 
-pid_t numtasks() {
-  pid_t num = 0, i = 0;
+pid_tt numtasks() {
+  pid_tt num = 0, i = 0;
   for (i = 0; i < MAX_TASKS; i++) {
     if (ready_queue[i].STATUS != TASK_FREE && ready_queue[i].STATUS != TASK_ZOMBIE)
       num++;

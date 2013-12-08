@@ -41,10 +41,10 @@ struct page_directory_t;
 typedef struct task
 {
    struct task* parent;
-   pid_t id;                // Process ID.
+   pid_tt id;                // Process ID.
    int new_proc;
-   size_t mem_limit;
-   size_t current_mem_usage;
+   size_tt mem_limit;
+   size_tt current_mem_usage;
    int waiting_for_input;
    uint16_t index;                // Process ID.
    char program_name[64];
@@ -89,8 +89,8 @@ void initialize_tasking();
 
 task_t* get_next_ready_task();
 task_t* get_next_free_task();
-task_t* get_task(pid_t pid) ;
-task_t* get_children(pid_t pid);
+task_t* get_task(pid_tt pid) ;
+task_t* get_children(pid_tt pid);
 // Called by the timer hook, this changes the running process.
 void switch_task();
 

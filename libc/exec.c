@@ -6,7 +6,7 @@ int execvpe(const char* filename, char *const argv[], char *const argp[]) {
     if (DEBUG) printf("In execvpe: Arguments:  %x %x\n",  argv, argp);
     if (DEBUG) printf("In execvpe: Arguments:  %s\n",  argv[0]);
     
-    pid_t ret = -1;
+    pid_tt ret = -1;
     __asm__ __volatile__ (
               "movq $0x5, %%rbx;\
                movq %0, %%rdx;\

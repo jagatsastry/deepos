@@ -3,7 +3,7 @@
 #include <scheduler.h>
 #include <stdio.h>
 
-pid_t kwaitpid(pid_t pid, uint32_t *status) {
+pid_tt kwaitpid(pid_tt pid, uint32_t *status) {
   current_task->STATUS = TASK_WAITING_ON_PID;
   current_task->pid_waiting_for = pid;
   current_task->time_at_wait = timer_tick;

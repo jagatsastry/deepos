@@ -107,8 +107,8 @@ void sys_sleep(struct regsForSyscall * s) {
 }
 
 void sys_waitpid(struct regsForSyscall * s) {
-  pid_t pid = (pid_t)s->rdx;
-  pid_t *retPid = (uint32_t*)s->rsi;
+  pid_tt pid = (pid_tt)s->rdx;
+  pid_tt *retPid = (uint32_t*)s->rsi;
   uint32_t *status =  *(uint32_t**)s->rcx;
   *retPid = kwaitpid(pid, status);
 }
@@ -148,8 +148,8 @@ void sys_execvpe(struct regsForSyscall * s) {
 }
 
 void sys_ulimit(struct regsForSyscall *regs) {
-  size_t lim = (size_t)regs->rdx * 1024; //Input is in numkb
-  size_t taskCode = (uint64_t)regs->rcx;
+  size_tt lim = (size_tt)regs->rdx * 1024; //Input is in numkb
+  size_tt taskCode = (uint64_t)regs->rcx;
 
   if (DEBUG) printf("Setting ulimit task code: %d, lim %x\n", taskCode, lim);
   if (current_task->current_mem_usage > lim)
@@ -158,7 +158,7 @@ void sys_ulimit(struct regsForSyscall *regs) {
 }
 
 void sys_kmalloc(struct regsForSyscall *regs) {
-  uint64_t size = (size_t)regs->rdx;
+  uint64_t size = (size_tt)regs->rdx;
   uint64_t *ptr = (uint64_t*)regs->rcx;
   *ptr = (uint64_t)kmalloc(size);
 }

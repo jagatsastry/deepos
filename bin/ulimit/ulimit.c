@@ -8,7 +8,7 @@ int main(int argc, char *argv[], char *argp[]) {
     printf("Usage: ulimit -[H/S]v <memory in kb>");
     return 1;
   }
-  size_t lim = atoi(argv[1]);
+  size_tt lim = atoi(argv[1]);
   int taskCode = 1;
   if (lim == 0) {
     if (DEBUG) printf("0 limit. noop\n");

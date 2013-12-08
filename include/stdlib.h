@@ -8,7 +8,7 @@ void memset(void *init, char val, int sz);
 
 void memcpy(void *dest, void *src, uint64_t num_bytes);
 
-pid_t numtasks();
+pid_tt numtasks();
 uint32_t getpid();
 uint32_t fork();
 int exec(char* filename) ;
@@ -17,11 +17,11 @@ int execve(const char* filename, char *const argv[]);
 
 void exit(int status);
 void sleep(uint32_t time);
-pid_t waitpid(pid_t pid, int *status, int options);
-pid_t wait(int *status);
+pid_tt waitpid(pid_tt pid, int *status, int options);
+pid_tt wait(int *status);
 void *sbrk();
-pid_t getpid();
-void* malloc(size_t);
+pid_tt getpid();
+void* malloc(size_tt);
 int atoi(char *p);
 char *pwd();
 int cd(char*);

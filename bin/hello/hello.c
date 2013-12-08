@@ -29,7 +29,7 @@ void print_arguments(int argc, char* argv[], char* argp[])  {
 
 int main(int argc, char* argv[], char* argp[]) {
   print_arguments(argc, argv, argp);
-  pid_t id = getpid();
+  pid_tt id = getpid();
   test_malloc();
   test_sleep();
   printf("HAHAHA PID: %d\n", id);

@@ -100,7 +100,7 @@ void add_to_vma(char *start, char *end) {
   }
 }
 
-void* kmalloc(size_t size) {
+void* kmalloc(size_tt size) {
   char *cur_ptr = current_task->cur_ptr;
   char *heap_end = current_task->heap_end;
   if (DEBUG) printf("Val of cur_ptr: %x addr: %x\n", (uint64_t)cur_ptr, (uint64_t)&cur_ptr);

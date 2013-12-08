@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void* malloc(size_t size) {
+void* malloc(size_tt size) {
     uint64_t ret = 0;
     __asm__ __volatile__ (
               "movq $17, %%rbx;\

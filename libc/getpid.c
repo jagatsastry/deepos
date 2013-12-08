@@ -1,8 +1,8 @@
 #include <defs.h>
 
 /*Returns a free block*/
-pid_t getpid() {
-    pid_t pid = 10;
+pid_tt getpid() {
+    pid_tt pid = 10;
     __asm__ __volatile__ ( 
                "movq $0x9, %%rbx;\
                movq %0, %%rdx;\

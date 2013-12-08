@@ -10,7 +10,7 @@ uint32_t fork() {
                movq %0, %%rdx;\
                int $0x80;\
                "::"g" (&ret):"rbx","rdx", "memory") ;
-   pid_t p = getpid();
+   pid_tt p = getpid();
    if (DEBUG) printf("Returning from fork. Ret %d Current pid %d\n", ret, p);
    return ret;
 }
