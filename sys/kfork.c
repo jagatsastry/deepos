@@ -45,7 +45,8 @@ uint32_t kfork(struct regsForSyscall *regs) {
    }
    new_task->envp[i] = NULL;
 
-   strcpy(new_task->program_name, parent_task->program_name);
+   //current_task->program_name = kmalloc(64);
+   strcpy(new_task->temp_buffer, parent_task->program_name);
 
    new_task->pml4e = clone_page_directory(current_task->pml4e, 4);
    
@@ -70,6 +71,7 @@ uint32_t kfork(struct regsForSyscall *regs) {
    new_task->new_proc = 1;
    new_task->STATUS = TASK_READY;
    strcpy((char*)new_task->pwd, (char*)current_task->pwd);
+   strcpy(new_task->program_name, new_task->temp_buffer);
    return new_task->id;
 }
 

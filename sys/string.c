@@ -13,9 +13,15 @@ size_t strlen(const char *str)
 
 void strcpy(char *dest, char *src) {
   int n = strlen(src);
+  int i = 0;
+  for (; i < n && src[i]; i++)
+    dest[i] = src[i];
+  dest[i] = 0;
+  /*
   do {
     dest[n] = src[n];
   }while(n--);
+  */
 }
 
 int strcmp(char *s , char *t) { 
@@ -140,3 +146,14 @@ char * strtok(char * str, char *comp)
     return &s[start];
 }
 
+char *ralign(int length, char *src) {
+  char *dest = kmalloc(length + 1);
+  int slen = strlen(src);
+  int j = 0;
+  for (int i = 0; i < length - slen; i++, j++) 
+    dest[j] = ' ';
+  
+  for (int i = 0; i < slen; i++, j++) 
+    dest[j] = src[i];
+  return dest;
+} 

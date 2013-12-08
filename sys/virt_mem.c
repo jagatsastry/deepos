@@ -246,12 +246,12 @@ void* i_virt_alloc() {
   uint64_t virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
   memset((void*)virt_add, 0, 4096);
-/*
   phy_add = (uint64_t)page_alloc();
   virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);
   memset((void*)virt_add, 0, 4096);
 
+/*
   phy_add = (uint64_t)page_alloc();
   virt_add = i_phy_to_virt(phy_add );
   map_process(virt_add, phy_add);

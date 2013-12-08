@@ -25,5 +25,6 @@ void* malloc(size_t);
 int atoi(char *p);
 char *pwd();
 int cd(char*);
+void ps(char *options);
 
 #endif

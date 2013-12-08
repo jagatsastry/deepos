@@ -61,11 +61,13 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
     strcpy(current_task->envp[i], envp[i]);
   }
   current_task->envp[i] = NULL;
+  strcpy((char*)current_task->temp_buffer, filename);
 
   if (DEBUG) printf("Running kexecvpe of %s\n", filename);
   struct Exe_Format exeFormat;
   uint64_t elf_start = 0;
   struct  posix_header_ustar *tar_p = get_elf_file(filename, &exeFormat, &elf_start);
+
   if (tar_p == NULL) {
     if (DEBUG) printf("%s not found. Searching in PATH\n", filename); 
     char ** path = getPath(envp);
@@ -81,6 +83,7 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
     if (DEBUG) printf ("Going back from kexecve\n");
     return -1;
   }
+  //current_task->program_name = kmalloc(64);
   print_posix_header(tar_p);
   char* x = tar_p->size;
   if (DEBUG) printf("\n%s\n", x);
@@ -107,6 +110,7 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
   //strcpy((char*)current_task->program_name, current_task->temp[0]);
   print_current_task();
 
+  strcpy((char*)current_task->program_name, (char*)current_task->temp_buffer);
   uint64_t phy_pml4e = i_virt_to_phy((uint64_t)current_task->pml4e);
 
   __asm__ __volatile__("movq %0, %%cr3" : : "r" (phy_pml4e));

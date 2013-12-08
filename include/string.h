@@ -11,5 +11,6 @@ char* strcat(char *str1, char *str2);
 int startsWith(char *str, char *substr);
 char *trim(char *str);
 int endsWith(char *str, char *substr);
+char *ralign(int length, char *src);
 
 #endif

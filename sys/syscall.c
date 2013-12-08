@@ -21,9 +21,14 @@ void print( struct regsForSyscall *regs)
     }
 }
 
-void exitSyscall(struct regsForSyscall *regs)
-{
+void exitSyscall(struct regsForSyscall *regs) {
     kexit(*(uint64_t*)regs->rdx);
+}
+
+extern void kps(char *options);
+void sys_ps(struct regsForSyscall *regs) {
+    volatile char *options = (volatile char*)regs->rdx;
+    kps((char*)options);
 }
 
 void sys_cd(struct regsForSyscall *regs) {
@@ -473,9 +478,9 @@ static void *syscalls[NUM_SYSCALLS] =
      sys_ls,
      sys_ls,
      sys_ls,
-     sys_ls,
+     sys_ps,
      sys_cd,
-     sys_pwd
+     sys_pwd,
 };
 
 

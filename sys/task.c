@@ -121,6 +121,7 @@ void initialize_tasking()
    current_task->id = next_pid++;
    current_task->pml4e = cur_pml4e_virt;
    current_task->STATUS = TASK_READY;
+   //current_task->program_name = kmalloc(64);
    strcpy((char*)current_task->program_name, (char*)"init");
    for (i = 0; i < 10; i++)
      current_task->vma[i].start_addr = NULL;

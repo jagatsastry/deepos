@@ -28,8 +28,8 @@
 #define     SYS_LS_2 19
 #define     SYS_LS_3 20
 #define     SYS_LS_4 21
-#define     SYS_LS_5 22
 
+#define     SYS_PS 22
 #define     SYS_CD 23
 #define     SYS_PWD 24
 

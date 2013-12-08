@@ -1,5 +1,6 @@
 #ifndef TASK_H
 #define TASK_H
+#include <timer.h>
 #include <virt_mem.h>
 #include <stdlib.h>
 
@@ -10,7 +11,7 @@
 #define VMA_SEGMENT_START 3
 
 
-#define SCHEDULE_FREQUENCY 1000
+#define SCHEDULE_FREQUENCY 1000 * TICK_PER_SECOND/18
 
 #define TASK_FREE  0
 #define TASK_READY 1
@@ -44,6 +45,7 @@ typedef struct task
    int waiting_for_input;
    uint16_t index;                // Process ID.
    char program_name[64];
+   char temp_buffer[64];
    int argc;
    char *argv[32];
    char *envp[32];
