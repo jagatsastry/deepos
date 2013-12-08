@@ -1,4 +1,5 @@
 #include<defs.h>
+#include <stdio.h>
 
 extern volatile uint64_t vga_virt_addr;
 
@@ -14,7 +15,17 @@ int in_kernel_mode() {
   return kernel != 0x1B;
 }
 
-void putc( char c )
+void putc_with_attr( char c , short attr);
+
+void putc( char c ) {
+  putc_with_attr(c, 0);
+}
+
+void putc_bold(char c) {
+  putc_with_attr(c, 0x0800);
+}
+
+void putc_with_attr( char c , short attr)
 {
    unsigned short *testMPtr = (unsigned short *)vga_virt_addr;
    unsigned short *scrnLocPtr ;
@@ -31,8 +42,7 @@ void putc( char c )
           x_cord = 79;
       }
       scrnLocPtr = testMPtr + ( y_cord * 80 ) + x_cord;
-
-      *scrnLocPtr = 0x20 | (attrb << 8);    
+        *scrnLocPtr = 0x20 | (attrb << 8);    
    }
    else if( c == '\n')
    {
@@ -52,7 +62,7 @@ void putc( char c )
    else if( c >= ' ')
    {
       scrnLocPtr = testMPtr + ( y_cord * 80 ) + x_cord;
-      *scrnLocPtr = c | attrb << 8;
+      *scrnLocPtr = c | attr;
       x_cord++;
    } 
    

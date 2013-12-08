@@ -2,6 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+void printHelp() {
+  printf("Shell commands\n"
+  "env -- List all the environment variables\n"
+  "setenv <NAME> <VALUE> - Set the environment variable\n"
+  "setenv PATH <Semi colon separated path list>\n"
+  "cd <dirname - relative or absolute> - Go to a directory in the tarfs structure\n"
+  "To find the list of binaries, do the following\n"
+  "  ls bin \n"
+  "  or /bin/ls /bin\n"
+  "  If your binaries are present in some other directory, add it to PATH\n"
+  "     or just give the absolute/relative filename of the binary\n"
+  "Processes can be moved to the background using &\n"
+  "Most of the commands that accept files support both relative and absolute file paths\n"
+  "File system follows unix semantics. /bin, /etc etc\n"
+  "Refer to the README file for more details\n");
+}
+
 void setenv(char **envp, char *var, char *val) {
   int i = 0;
   for (; i < 64 && envp[i]; i++) {
@@ -66,7 +83,11 @@ void dsh(int argc, char *argv[], char *envp[]) {
          setenv(envp, argv[1], argv[2]);
          continue;
        }
-       if (!strcmp(command, "env")) {
+       if (!strcmp(command, "help")) {
+         printHelp();
+         continue;
+       }
+       else if (!strcmp(command, "env")) {
          printEnv(envp);
          continue;
        }

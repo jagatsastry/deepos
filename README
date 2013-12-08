@@ -1,19 +1,48 @@
-The provided Makefile:
-  1) builds a kernel
-	2) copies it into rootfs/boot/kernel/kernel
-	3) creates an ISO CD image with the rootfs/ contents
+This Operating System project is the submission of
 
-To boot the system in QEMU, run:
-	qemu-system-x86_64 -curses -cdrom $USER.iso -drive id=disk,file=$USER.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -gdb tcp::NNNN
+1) Jagat Pudipeddi ( SBU ID : 108721027 )
+2) Alok Katiyar    ( SBU ID : 108943744 )
 
-	Explanation of parameters:
-	-curses         use a text console (omit this to use default SDL/VNC console)
-	-cdrom x.iso    connect a CD-ROM and insert CD with x.iso disk
-	-hda x.img      connect a hard drive with x.img disk
-	-gdb tcp::NNNN  listen for "remote" debugging connections on port NNNN
+We are submitting this project as a 60 point project - Preemptive OS
 
-When using the -curses mode, switch to the qemu> console with ESC-2.
 
-To connect a remote debugger to the running qemu VM:
-	gdb ./kernel
-	target remote localhost:1234
+Following are the features that our project supports:
+  
+Libc
+--------
+fork, exec, execve, execvpe, wait, waitpid, exit, getpid, open, close, read, opendir, readdir, closedir, sleep , printf, scanf (with multiple arguments), malloc, pwd, sleep
+
+Binaries
+--------
+ls, cd, ps, sleep, dsh (shell), ulimit(-Sv)
+
+Shell commands/Features
+-----------------------
+help
+env
+setenv (used for setting PATH)
+cd
+pwd
+sh (alias for dsh)
+Relative and absolute filename reference
+Path based command execution
+Background process (&)
+Status bar that mentions uptime, current process, number of process
+
+
+License/Attributions
+--------------------
+Released under Apache License v2, terms of which are specified in
+http://www.apache.org/licenses/LICENSE-2.0.html
+
+The following resources were used in building this OS. Some code snippets were adapted from the following tutorials, after ensuring that they are compatible with Apache License v2
+
+James Molloy OS dev tutorial - http://jamesmolloy.co.uk/tutorial_html/index.html
+Brans's Kernel dev tutorial - http://www.osdever.net/bkerndev/Docs/title.htm
+Ian Jack's kernel dev tutorial - http://www.ijack.org.uk/
+Broken Thorn kernel dev tutorial - http://www.brokenthorn.com/Resources/OSDevIndex.html
+OS Development wiki - http://wiki.osdev.org/Expanded_Main_Page
+
+Geek OS - http://geekos.sourceforge.net/ (tarfs)
+Shovel OS - https://code.google.com/p/shovelos/ (interrupts)
+Minix 3 - https://github.com/minix3/minix

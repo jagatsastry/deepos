@@ -7,7 +7,7 @@ extern void clear_line(int);
 
 void create_shell() {
     //printf("Execing");
-    printf("Creating deep shell\n");
+    printf("Type \"help\" for some quick introduction to deep-shell features\n");
     char *fnm = "bin/init_sh";
     char *filename = (char*)kmalloc(strlen(fnm) + 1);
     strcpy(filename, fnm); 

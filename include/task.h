@@ -10,6 +10,9 @@
 #define VMA_HEAP_IDX 2
 #define VMA_SEGMENT_START 3
 
+#define STDIN_FD 0
+#define STDOUT_FD 1
+#define STDERR_FD 2 
 
 #define SCHEDULE_FREQUENCY 1000 * TICK_PER_SECOND/18
 

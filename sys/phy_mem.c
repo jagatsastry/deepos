@@ -1,4 +1,3 @@
-/*Adapted from Rishabh Sharma's SBU OS. Distriuted under Lesser GPL license*/
 #include<stdio.h>
 #include<defs.h>
 #include<phy_mem.h>
@@ -75,7 +74,6 @@ void init_region (uint64_t  base, uint64_t limit) {
   mmap_unset(1);
   for (; start<=end; start++) {
     if((start*PHYS_PAGE_SIZE) <=  ker_physfree  && (start*PHYS_PAGE_SIZE) >= ker_physbase){
-      //      printf("\nNot Setting for %d",start);
       
     }else{
       mmap_set(start);

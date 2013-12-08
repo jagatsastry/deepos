@@ -17,9 +17,6 @@ void print_posix_header( struct posix_header_ustar *p){
   if (DEBUG) printf("Name: %s, Mode: %s, Uid: %s\n",  p->name, p->mode, p->uid);
   if (DEBUG) printf("Gid: %s, Size: %s, Typeflag: %s\n", 
          p->gid, p->size, p->typeflag);
-
-  //  if (DEBUG) printf("\n Posix header :  %s :%s :%s ",p->name,p->size,p->typeflag);
-
 }
 
 extern uint64_t oct_to_dec(char *oct);
@@ -27,21 +24,7 @@ extern char _binary_tarfs_start, _binary_tarfs_end;
 
 struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAddr, uint64_t *elf_start_ptr) {
 
-/*
-  char* header =  (char*)(&_binary_tarfs_start);
-  char *end =  (char*)(&_binary_tarfs_end);
-// while(header < (struct posix_header_ustar*)(&_binary_tarfs_end))
-  struct posix_header_ustar * h = (struct posix_header_ustar*)header;
-   while(header < end - 512 && strcmp(h->name, filename) != 0) {
-    int sz = oct_to_dec(h->size);
-    if (DEBUG) printf("Name: %s Size: %d Cur: %p\n", h->name, sz, h);
-    if (sz % 512 != 0)
-      sz += (512 - sz % 512);
-    int jump = (512 + sz);
-    header = header + jump;
-    h = (struct posix_header_ustar*)header;
-   }
-*/       uint64_t start = (uint64_t)&_binary_tarfs_start;
+       uint64_t start = (uint64_t)&_binary_tarfs_start;
        uint64_t end = (uint64_t)&_binary_tarfs_end;
        struct posix_header_ustar *ptr;
        ptr = (struct posix_header_ustar *)start;
@@ -58,9 +41,7 @@ struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAdd
              size = size*10 + ( ptr->size[i] - '0');
              i++ ;
           }
-          //printf("\n Size before sending %d", size ); 
           size = octal_decimal( size );
-          //printf("\nThe size is %d", size); 
           int offset = 0;
           if( size % 512 != 0 )
           {
@@ -93,17 +74,12 @@ void map_exe_format(Exe_Format* exeFormatAddr, uint64_t *elf_start_ptr){
     struct Exe_Segment segment  = (struct Exe_Segment)exeFormatAddr->segmentList[i];
     uint64_t start = segment.vaddr;
     uint64_t end = segment.vaddr + segment.sizeInMemory;
-   
-    
-    // if (DEBUG) printf("\n Start: %x End: %x", start ,end);
-   
     uint64_t pageNeeded = 0;
     uint64_t least_start = 0;
     uint64_t max_end = 0;
 
     if(end-start !=0){
 
-      
       least_start = (start/0x1000)*0x1000;
       max_end = (end/0x1000)*0x1000 + 0x1000;
 
@@ -121,25 +97,17 @@ void map_exe_format(Exe_Format* exeFormatAddr, uint64_t *elf_start_ptr){
         while(pageNeeded !=0){
 
 	  void *physicalAddress = page_alloc();
-	  //  if (DEBUG) printf("\n Physical Address :%x",physicalAddress);
-	 
 	  map_process(least_start,(uint64_t)physicalAddress);
-	  
 	  pageNeeded -= 1;
 	  least_start += 0x1000;
 
        }
-
 	uint64_t ondiskstart = segment.offsetInFile + *elf_start_ptr;
-
 	uint64_t ondiskfinish = segment.offsetInFile + *elf_start_ptr + segment.sizeInMemory;
        	if (DEBUG) printf("\n ondiskstart: %x odiskfinish: %x", ondiskstart,ondiskfinish);
-	
 	uint64_t size = segment.sizeInMemory;
-
 	char *ondisk =  (char *) ondiskstart;
 	char *vadd = (char *) start;
-	//	if (DEBUG) printf("\nvadd %x",vadd);
 	while(size){
 
 	  *vadd = *ondisk;

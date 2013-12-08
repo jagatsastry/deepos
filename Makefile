@@ -24,8 +24,12 @@ $(USER).iso: kernel
 	cp kernel $(ROOTBOOT)/kernel/kernel
 	mkisofs -r -no-emul-boot -input-charset utf-8 -b boot/cdboot -o $@ $(ROOTFS)/
 
-$(USER).img:
+$(USER).img: newfs.506
 	qemu-img create -f raw $@ 16M
+	./newfs.506 $@
+
+newfs.506: $(wildcard newfs/*.c)
+	$(CC) -o $@ $^
 
 kernel: $(patsubst %.s,obj/%.asm.o,$(KERN_SRCS:%.c=obj/%.o)) obj/tarfs.o
 	$(LD) $(LDLAGS) -o $@ -T linker.script $^
@@ -65,7 +69,7 @@ obj/%.asm.o: %.s
 SUBMITTO:=~mferdman/cse506-submit/
 
 submit: clean
-	tar -czvf $(USER).tgz --exclude=$(ROOTLIB) --exclude=$(ROOTBIN) --exclude=.empty --exclude=.*.sw? --exclude=*~ LICENSE Makefile linker.script sys bin libc ld include $(ROOTFS)
+	tar -czvf $(USER).tgz --exclude=.empty --exclude=.*.sw? --exclude=*~ LICENSE README Makefile linker.script sys bin crt libc newfs ld include $(ROOTFS) $(USER).img
 	@gpg --quiet --import cse506-pubkey.txt
 	gpg --yes --encrypt --recipient 'CSE506' $(USER).tgz
 	rm -fv $(SUBMITTO)$(USER)=*.tgz.gpg
@@ -73,4 +77,4 @@ submit: clean
 
 clean:
 	find $(ROOTLIB) $(ROOTBIN) -type f ! -name .empty -print -delete
-	rm -rfv obj kernel $(ROOTBOOT)/kernel/kernel
+	rm -rfv obj kernel newfs.506 $(ROOTBOOT)/kernel/kernel

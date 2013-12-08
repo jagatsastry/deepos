@@ -52,6 +52,5 @@ void init_pics()
 
     port_outb(PIC1 + 1, 0);
     port_outb(PIC2 + 1, 0);
-    printf("PICS Initialized\n");
     __asm__ __volatile("sti");
 }

@@ -29,7 +29,7 @@ int main() {
   //getSheBang("bin/folder1/test1.txt", buffPtr );
   //printf("\nTesting for SheBang %s", buffPtr );  
   //close(STDOUT_FD);
-  //write(STDOUT_FD, "My name is alok"); 
+  write(STDOUT_FD, "My name is alok"); 
   return 0;
 
 }

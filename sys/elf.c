@@ -24,36 +24,10 @@ int strncmp(const char *s1, const char *s2, uint32_t n)
 int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 			 struct Exe_Format *exeFormat , programHeader * phdr)
 {
-  //printf("Len: %d\n", exeFileLength);
-  //printf("\nhi\n");
   elfHeader *hdr;
-  // programHeader *phdr;
   int i;
 
   hdr = (elfHeader *) exeFileData;
-
-  //  printf("\n Inside ELF: [  %x: %x: %x: \n %x: %d: %d:",hdr->type,hdr->version,hdr->entry,hdr->phoff,hdr->phnum,hdr->shnum);
-  /*
-     
-	   unsigned char ident[16];
-	   unsigned short type;
-	   unsigned short machine;
-	   unsigned int version;
-	   unsigned int entry;
-	   unsigned int phoff;
-	   unsigned int sphoff;
-	   unsigned int flags;
-	   unsigned short ehsize;
-	   unsigned short phentsize;
-	   unsigned short phnum;
-	   unsigned short shentsize;
-	   unsigned short shnum;
-	   unsigned short shstrndx;
-	 
-  */
-
-
-
   if (exeFileLength < sizeof(elfHeader) ||
       strncmp(exeFileData, "\x7F" "ELF", 4) != 0) {
     if (elfDebug)
@@ -73,8 +47,6 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
     return 1;
   }
 
-
-  //  printf("\nGetting from Elf:%d",hdr->phnum);
   exeFormat->numSegments = hdr->phnum;
   exeFormat->entryAddr = hdr->entry;
 
@@ -82,17 +54,13 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 
   if(DEBUG) printf("\n Phdr address %x, phdr offset: %x, numseg: %d ",phdr, hdr->phoff, hdr->phnum);
 
-
-
-  //  printf("\n Phdr address %x ",pdr);
-    if (DEBUG) printf("\n Num Segment of Exe Format : %d", exeFormat->numSegments);
+   if (DEBUG) printf("\n Num Segment of Exe Format : %d", exeFormat->numSegments);
       int p1 =0;
  for(;p1< hdr->phnum; p1++){
 
        if (DEBUG) printf("\n Segments: type %x : offset %x:  vaddr %x: paddr %x \n :filesize %x : memsz %x : flags %x :  alignment %x ",phdr[p1].type,phdr[p1].offset,phdr[p1].vaddr,phdr[p1].paddr,
         phdr[p1].fileSize,phdr[p1].memSize,phdr[p1].flags,phdr[p1].alignment);
   }
- //while(1); 
   for (i = 0; i < hdr->phnum; ++i) {
     struct Exe_Segment *segment = &exeFormat->segmentList[i];
 
@@ -109,7 +77,6 @@ int Parse_ELF_Executable(char *exeFileData, uint64_t exeFileLength,
 	                if (DEBUG) printf
 			  ("Segment %d: length in file (%x) exceeds size in memory (%x)\n",
 			   i, segment->lengthInFile, segment->sizeInMemory);
-//      return 1;
     }
   }
   return 0;
@@ -136,22 +103,5 @@ void print_p_format(struct Exe_Format* exe_format,programHeader* pdr){
   if (DEBUG) printf("\n Num Segment of Exe Format : %d", exe_format->numSegments);
   for(;i<exe_format->numSegments; i++){
 
-    //    printf("\n Segments: %x : %x: %x: %x :%x :%x :%x : %x ",pdr[i].type,pdr[i].offset,pdr[i].vaddr,pdr[i].paddr,pdr[i].fileSize,pdr[i].memSize,pdr[i].flags,pdr[i].alignment);
-  }
-
-  /*
-  typedef struct {
-    unsigned int type;
-    unsigned int offset;
-    unsigned long vaddr;
-    unsigned long paddr;
-    unsigned long fileSize;
-    unsigned long memSize;
-    unsigned long flags;
-    unsigned long alignment;
- 
-    */
-
-
-
+   }
 }

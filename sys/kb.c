@@ -6,6 +6,7 @@
 #include<idt.h>
 
 extern void print_key(char c);
+extern void putc_bold(char c);
 
 void keyboard_handler(struct regs *r)
 {
@@ -31,14 +32,8 @@ void keyboard_handler(struct regs *r)
             if( scancode == 28){
                enterPressed = 1;
                if (DEBUG) printf("\nEntered Pressed");
-               putc('\n');
+               putc_bold('\n');
 
-               /*if( enterPressed == 0){
-                     buff[ curBuffIndex ] = pressedKey;
-                     curBuffIndex++;
-               }*/ 
-               // while(1); 
-               //printf("Value of keyPressed %d",*keyPressed); 
                return;
             } 
 
@@ -60,12 +55,18 @@ void keyboard_handler(struct regs *r)
             }
 	    }
             if( enterPressed == 0 ){
-                buff[curBuffIndex ] = pressedKey; 
-                curBuffIndex++; 
-                putc( pressedKey ); 
+                if (pressedKey == 0x08) {
+                  curBuffIndex = (curBuffIndex > 0?curBuffIndex-1:curBuffIndex);
+                  buff[curBuffIndex] = '\0';
+                }
+                else {
+                  buff[curBuffIndex ] = pressedKey; 
+                  curBuffIndex++; 
+                }
+                putc_bold(pressedKey);
                 //print_key(pressedKey); 
             }else{
-                putc( pressedKey ); 
+                putc_bold( pressedKey ); 
                 //print_key(pressedKey);
             } 
            }

@@ -31,7 +31,6 @@ typedef struct {
   uint32_t type;
   uint32_t flags;
   uint64_t offset;
-  //uint64_t idontgiveafuck;
   uint64_t vaddr;
   uint64_t paddr;
   uint64_t fileSize;
