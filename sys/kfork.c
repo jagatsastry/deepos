@@ -69,6 +69,7 @@ uint32_t kfork(struct regsForSyscall *regs) {
    new_task->parent = (task_t*)current_task;
    new_task->new_proc = 1;
    new_task->STATUS = TASK_READY;
+   strcpy((char*)new_task->pwd, (char*)current_task->pwd);
    return new_task->id;
 }
 

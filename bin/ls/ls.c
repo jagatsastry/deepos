@@ -1,17 +1,17 @@
 # include <stdio.h>
 # include <idt.h>
+# include <stdlib.h>
 # include <files.h>
 
-int main(  )
+int main(int argc, char *argv[])
 {
+
     //replace these two values with the actual argc and argv parameter
-    int argc1 = 2;
     //char *cwd = "bin/folder1/";
-    char *normalDir = "bin/"; //TODO: Take care of "/"
-    if( argc1 == 1 ){
-       // funcForLS( cwd );
+    if( argc == 1 ){
+        funcForLS(pwd());
     }else{
-        funcForLS( normalDir );
+        funcForLS(argv[1]);
     }
     return 0;
 }

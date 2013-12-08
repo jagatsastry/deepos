@@ -2,10 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-int cd(char *cwd) {
-  return 1;
-}
-
 void setenv(char **envp, char *var, char *val) {
   int i = 0;
   for (; i < 64 && envp[i]; i++) {
@@ -33,11 +29,9 @@ void dsh(int argc, char *argv[], char *envp[]) {
    strcpy(envp[0], "PATH=bin");
    envp[1] = NULL;
 
-   char cwd[128];
-   strcpy(cwd, "~");
    if (DEBUG) printf("Just entered dsh: PID %d\n", getpid());
    for( ; ; ){ 
-       char* shellPrompt = strcat(strcat("dsh [", cwd), "/]$ "); 
+       char* shellPrompt = strcat(strcat("dsh [", pwd()), "]$ "); 
        printf("\n%s",shellPrompt);
        
        char *command = malloc(256); //[ 256 ] = { 0 };
@@ -81,9 +75,8 @@ void dsh(int argc, char *argv[], char *envp[]) {
            printf("Usage: cd <dir>");
            continue;
          }
-         if(cd(argv[1]))
-           strcpy(cwd, argv[1]);
-           continue;
+         cd(argv[1]);
+         continue;
        }
        if (!strcmp(argv[0], "sh")) {
          if (argc > 1) {
@@ -94,13 +87,13 @@ void dsh(int argc, char *argv[], char *envp[]) {
          continue;
        }
 
-
        int pid = fork();
        if (pid == 0) {
            if(execvpe(argv[0], argv, envp) < 0){
+             //TODO: There's a bug where any subsequent command fails
                printf("dsh: %s: command not found\n", command);
-               return;
-           } 
+               exit(1);
+           }
        } else  {
            int status = 0;
            if (!bg) {

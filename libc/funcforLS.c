@@ -11,6 +11,8 @@ void funcForLS( const char *str )
      //get the start address of the directory in
      //our uint64 variable
      //while(1);
+     printf("Doing ls for %s\n", str);
+
      volatile uint64_t i = 0;
      __asm__ __volatile__("movq %0, %%rax;\
                            movq %1, %%rcx;\

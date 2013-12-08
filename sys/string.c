@@ -43,6 +43,18 @@ int startsWith(char *str, char *substr) {
   return 1;
 }
 
+int endsWith(char *str, char *substr) {
+  int a = strlen(str);
+  int b = strlen(substr);
+  if (b > a)
+    return 0;
+
+  for (int i = 0; i < b; i++)
+    if (str[a - i - 1] != substr[b - i - 1])
+      return 0;
+  return 1;
+}
+
 char* strcat(char *str1, char *str2) {
   int a = strlen(str1);
   int b = strlen(str2);

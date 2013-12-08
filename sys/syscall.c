@@ -26,6 +26,19 @@ void exitSyscall(struct regsForSyscall *regs)
     kexit(*(uint64_t*)regs->rdx);
 }
 
+void sys_cd(struct regsForSyscall *regs) {
+    volatile char *dir = (volatile char*)regs->rdx;
+    char *newDir = (char*)current_task->pwd;
+    if (strcmp((char*)current_task->pwd, "/"))
+      newDir = strcat((char*)current_task->pwd, "/");
+    newDir = strcat(newDir, (char*)dir);
+    strcpy((char*)current_task->pwd, newDir);
+}
+
+void sys_pwd(struct regsForSyscall *regs) {
+  volatile char *cwd = (volatile char*)regs->rdx;
+  strcpy((char*)cwd, (char*)current_task->pwd);
+}
 
 //void enterToMemory( void *Addr, int typeOfArg)
 void enterToMemory( struct regsForSyscall *regs) 
@@ -434,10 +447,6 @@ void sys_ls( struct regsForSyscall *regs )
        start = start + sizeof(struct posix_header_ustar ) + size + offset;
 
     }
-
-    //printf("\nHello World");
-
-    //while(1);
 }
 
 static void *syscalls[NUM_SYSCALLS] =
@@ -460,7 +469,13 @@ static void *syscalls[NUM_SYSCALLS] =
      sys_closedir,
      sys_ulimit,
      sys_kmalloc,
-     sys_ls
+     sys_ls,
+     sys_ls,
+     sys_ls,
+     sys_ls,
+     sys_ls,
+     sys_cd,
+     sys_pwd
 };
 
 

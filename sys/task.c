@@ -127,6 +127,7 @@ void initialize_tasking()
    //uint64_t virt_u_rsp = (uint64_t)i_virt_alloc();
    current_task->vma[VMA_USER_STACK_IDX].start_addr = (uint64_t)stack;
    current_task->vma[VMA_KERNEL_STACK_IDX].start_addr = (uint64_t)i_virt_alloc();
+   strcpy((char*)current_task->pwd, "/");
 
    for(i = 0; i < VMA_SEGMENT_START; i++)
      current_task->vma[i].end_addr = current_task->vma[i].start_addr + 4095;

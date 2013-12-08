@@ -25,7 +25,14 @@
 #define     SYS_ULIMIT 16
 #define     SYS_MALLOC 17
 #define     SYS_LS 18
+#define     SYS_LS_2 19
+#define     SYS_LS_3 20
+#define     SYS_LS_4 21
+#define     SYS_LS_5 22
 
-#define     NUM_SYSCALLS 19
+#define     SYS_CD 23
+#define     SYS_PWD 24
+
+#define     NUM_SYSCALLS 26
 
 #endif

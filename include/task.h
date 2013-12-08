@@ -48,7 +48,7 @@ typedef struct task
    char *argv[32];
    char *envp[32];
    char *path[32];
-   char *pwd;
+   char pwd[128];
    uint32_t exit_status;
    uint32_t waiting_pid_exit_status;
    uint8_t STATUS;

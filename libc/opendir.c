@@ -8,6 +8,11 @@
 
 DIR* opendir( const char *dirname )
 {
+  char *dir1 = NULL; 
+   if (dirname[strlen((char*)dirname) - 1] != '/') {
+     dir1 = strcat((char*)dirname, "/");
+   }
+   uint64_t dirAddr = (uint64_t)(dir1?dir1:dirname);
    volatile int i = -1;
    DIR  *dir = (DIR *)sbrk(); 
    __asm__ __volatile__("movq %0, %%rax;\
@@ -15,7 +20,7 @@ DIR* opendir( const char *dirname )
                          movq %2, %%rdx;\
                          movq $13, %%rbx;\
                          int $0x80;\
-                         "::"g" (dirname), "g"(&i),"g"(dir): "rbx", "rax", "rcx","rdx");
+                         "::"g" (dirAddr), "g"(&i),"g"(dir): "rbx", "rax", "rcx","rdx");
    printf("\n Modified value of i is %d:",i);
    if( i != -1 ){
       //printf("Value set is %d",dirIntArr[i]); 
