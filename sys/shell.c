@@ -20,7 +20,7 @@ void create_shell() {
 
     char **argv = kmalloc(64 * sizeof(char*));
     argv[0] = filename;
-    kexecvpe("bin/init_sh", 1, argv, envp);
+    kexecvpe("/bin/init_sh", 1, argv, envp);
     printf("WARNING: Back after exec of shell");
     return;
 }

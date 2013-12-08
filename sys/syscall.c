@@ -129,7 +129,7 @@ void sys_execvpe(struct regsForSyscall * s) {
   char *filename = (char*)s->rdx;
   char **argv = (char**)s->rcx;
   char **argp = (char**)s->rsi;
-  int *ret = (int*)s->rsi;
+  int *ret = (int*)s->rdi;
   if (DEBUG) printf("In syscall execvpe: Arguments:  %x %x\n",  argv, argp);
   if (DEBUG) printf("In syscall execvpe: Arguments:   %s\n",   argv[0]);
 

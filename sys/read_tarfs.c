@@ -49,7 +49,7 @@ struct posix_header_ustar* get_elf_file(char* filename, Exe_Format *exeFormatAdd
           ptr = (struct posix_header_ustar *)start;
           if (DEBUG) printf("\nName %s",ptr->name);
           if (DEBUG) printf("\nSize %s",ptr->size);
-          if( !strcmp( ptr->name, filename)){
+          if( !strcmp( ptr->name, filename + 1)){
               start = start + sizeof(struct posix_header_ustar );
               break; 
           } 

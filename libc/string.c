@@ -141,3 +141,16 @@ char *trim(char *str) {
 
   return str;
 }
+
+int endsWith(char *str, char *substr) {
+  int a = strlen(str);
+  int b = strlen(substr);
+  if (b > a)
+    return 0;
+
+  for (int i = 0; i < b; i++)
+    if (str[a - i - 1] != substr[b - i - 1])
+      return 0;
+  return 1;
+}
+

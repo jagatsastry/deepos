@@ -1,6 +1,8 @@
 # include <stdio.h>
 # include <idt.h>
 # include <stdlib.h>
+#include <utilities.h>
+#include <string.h>
 # include <files.h>
 
 int main(int argc, char *argv[])
@@ -11,7 +13,8 @@ int main(int argc, char *argv[])
     if( argc == 1 ){
         funcForLS(pwd());
     }else{
-        funcForLS(argv[1]);
+        char *dir = dirnameWithEndSlash(getAbsoluteFilePath(pwd(), argv[1]));
+        funcForLS(dir);
     }
     return 0;
 }

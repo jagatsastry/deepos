@@ -15,7 +15,7 @@ extern void print_current_task();
 extern uint64_t i_virt_to_phy(uint64_t virt);
 
 char* addSlash(char *curPath) {
-      if (curPath[strlen(curPath)] !=  '/')
+      if (curPath[strlen(curPath) - 1] !=  '/')
         curPath = strcat(curPath, "/");
       return curPath;
 }
@@ -69,8 +69,9 @@ int kexecvpe(char* filename, int argc, char *argv[], char *envp[]) {
   if (tar_p == NULL) {
     if (DEBUG) printf("%s not found. Searching in PATH\n", filename); 
     char ** path = getPath(envp);
+    char *filename1 = filename;
     for (int i = 0; path && path[i]; i++) {
-      filename = strcat(path[i], filename);
+      filename = strcat(path[i], filename1);
       if (DEBUG) printf("Searching %s\n", filename);
       tar_p = get_elf_file(filename, &exeFormat, &elf_start);
     }

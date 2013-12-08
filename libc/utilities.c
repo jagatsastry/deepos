@@ -113,3 +113,16 @@ int atoi(char *p) {
  }
  return k;
 }
+
+
+char*  getAbsoluteFilePath(char *dir, char *fname) {
+  if (!endsWith(dir, "/"))
+    dir = strcat(dir, "/");
+  return strcat(dir, fname);
+}
+
+char* dirnameWithEndSlash(char *dirname) {
+   if (!endsWith(dirname, "/"))
+     dirname = strcat((char*)dirname, "/");
+   return dirname;
+}

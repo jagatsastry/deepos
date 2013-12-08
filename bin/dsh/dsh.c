@@ -26,7 +26,7 @@ void printEnv(char **envp) {
 char * strtok(char * str, char *comp);
 
 void dsh(int argc, char *argv[], char *envp[]) {
-   strcpy(envp[0], "PATH=bin");
+   strcpy(envp[0], "PATH=/bin");
    envp[1] = NULL;
 
    if (DEBUG) printf("Just entered dsh: PID %d\n", getpid());
