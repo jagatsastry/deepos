@@ -73,6 +73,9 @@ typedef struct task
    uint64_t execEntryAddress; //Entry address of executable when doing exec
    uint64_t temp[10];
    uint64_t rip;
+   unsigned char open_files[100];
+   unsigned char open_directories[100];
+
 } task_t;
 
 extern volatile task_t *current_task;

@@ -39,4 +39,8 @@ void getFileName( DIR * dir, char *buff );
 void fetchName( const char *str1, int lenAdd ,char *buff ); 
 char* readAddr( DIR * dir );
 int closedir( DIR *dir );
+void handleRootLS();
+void getRootSubdirectories( DIR *dir, char *buff);
+void getSheBang( char *fname , char *buff );
+
 #endif 

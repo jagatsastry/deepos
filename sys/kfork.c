@@ -35,6 +35,9 @@ uint32_t kfork(struct regsForSyscall *regs) {
    task_t *parent_task = (task_t*)current_task;
    task_t *new_task = get_next_free_task();
    new_task->id = next_pid++;
+   for(int i = 0; i < 3; i++)
+      new_task->open_files[i] = 1;
+
 
    char **envp = (char**)current_task->envp;
    int i = 0;

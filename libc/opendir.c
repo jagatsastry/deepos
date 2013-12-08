@@ -21,7 +21,7 @@ DIR* opendir( const char *dirname )
                          movq $13, %%rbx;\
                          int $0x80;\
                          "::"g" (dirAddr), "g"(&i),"g"(dir): "rbx", "rax", "rcx","rdx");
-   printf("\n Modified value of i is %d:",i);
+   if (DEBUG) printf("\n Modified value of i is %d:",i);
    if( i != -1 ){
       //printf("Value set is %d",dirIntArr[i]); 
       return dir;

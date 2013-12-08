@@ -1,10 +1,16 @@
 #include <defs.h>
 #include <files.h>
+#include <utilities.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+char *sanitize_dir(char *dirname) {
+    return dirnameWithEndSlash(getAbsoluteFilePath(pwd(), dirname));
+}
+
 int cd(char *dir) {
+     dir = sanitize_dir(dir);
      DIR* df = opendir(dir);
      if (df == 0) {
        printf("cd: %s No such file or directory\n", dir);

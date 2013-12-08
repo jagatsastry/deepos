@@ -33,11 +33,12 @@ void sys_ps(struct regsForSyscall *regs) {
 
 void sys_cd(struct regsForSyscall *regs) {
     volatile char *dir = (volatile char*)regs->rdx;
+    /*
     char *newDir = (char*)current_task->pwd;
     if (strcmp((char*)current_task->pwd, "/"))
       newDir = strcat((char*)current_task->pwd, "/");
-    newDir = strcat(newDir, (char*)dir);
-    strcpy((char*)current_task->pwd, newDir);
+    newDir = strcat(newDir, (char*)dir);*/
+    strcpy((char*)current_task->pwd, (char*)dir);
 }
 
 void sys_pwd(struct regsForSyscall *regs) {
@@ -171,6 +172,14 @@ int fdAllocArray[100] = {0};
 int curLocation = 0;
 int dirDesc[ 100 ] = {0};
 
+
+void sys_noop(struct regsForSyscall *r) {
+  if (DEBUG) 
+    printf("n00p %d\n", r->rbx);
+}
+
+
+
 void sys_open( struct regsForSyscall *regs )
 {
    char *fname = (char *)regs->rax; 
@@ -180,10 +189,11 @@ void sys_open( struct regsForSyscall *regs )
    struct posix_header_ustar *ptr;
    int  isPresent = 0, size ;
    ptr = (struct posix_header_ustar *)start;
-
+   printf("\nFname is %s",fname);
    while( start < end  ){
        ptr = (struct posix_header_ustar *)start;
-       if( !strcmp( ptr->name,fname)){
+       if( !strcmp( ptr->name,&fname[1])){
+            printf("\nFile found"); 
             start = start + sizeof(struct posix_header_ustar );
             size = 0; int i = 0;
             while( ptr->size[i] != '\0'){
@@ -221,14 +231,16 @@ void sys_open( struct regsForSyscall *regs )
       //descriptors
       //get the file size
 
-      for( int i = 0 ; i <= 99; i++ ){
+      for( int i = 3 ; i <= 99; i++ ){
              if( ! fdAllocArray[i] ){
+                  printf("\nDescriptor found %d", i); 
                   fdAllocArray[i] = 1;
                   fdArr[ i ].fd = i;
                   fdArr[ i ].start= start;
                   fdArr[ i ].curPtr= start;
                   fdArr[ i ].fileSize = size;
                   fdArr[ i ].eof = 0;
+                  current_task->open_files[i] = 1;   
                   *retVal = i;
                   return;
              }
@@ -247,8 +259,8 @@ void sys_read( struct regsForSyscall *regs ){
       int fd = (int)regs->rcx; 
       int nBytes = (int)regs->rdx;
       int *retNumBytesRead = (int *)regs->r10; 
-      if( fd == -1  || !fdAllocArray[fd] ){
-         printf("\nFD ALLOC ARRAY UNSET"); 
+      if( fd == -1  || ! current_task->open_files[fd]){ 
+         printf("\nInvalid file descriptor"); 
          //while(1); 
         *retNumBytesRead = 0; 
          return; 
@@ -292,6 +304,9 @@ void sys_close( struct regsForSyscall *regs )
 {
       int fd = (int)regs->rax; 
       int *retVal = (int *)regs->rcx; 
+      printf("\nValue of fd was %d",current_task->open_files[fd]); 
+      current_task->open_files[fd] = 0;
+       
       fdAllocArray[ fd ] = 0;  
       *retVal = 1; 
 }
@@ -306,11 +321,32 @@ void sys_opendir( struct regsForSyscall *regs){
     uint64_t end = (uint64_t)&_binary_tarfs_end;
     struct posix_header_ustar *ptr;
     int  isPresent = 0, size;
+    if( !strcmp(dirname,"/")) { 
+       for( int i = 3 ; i <= 99; i++ ){
+             if( !dirDesc[ i ] ){
+                  dirDesc[i] = 1;
+                  dir->fd = dirIntArr[i].fd = i;
+                  dir->startPos = dirIntArr[i].startPos = (uint64_t)start;
+                  dir->curPos = dirIntArr[i].curPos = (uint64_t)start;
+                  dir->eofDirectory = dirIntArr[i].eofDirectory = 0;
+                  dir->prevFile[0] = dirIntArr[i].prevFile[0] = '\0';
+                  strcpy(  dirIntArr[i].dirPath, dirname );
+                  strcpy(  dir->dirPath , dirname);
+                  current_task->open_directories[i] = 1;
+                   printf("\n Ding Dong");
+                  //*dir =  &dirIntArr[i];
+                  //printf("Hello ptr %p",*dir);
+                  *x = i;
+                  return;
+              }
+      }     
+    } 
+    //while(1); 
     ptr = (struct posix_header_ustar *)start;
     while( start < end  ){
        ptr = (struct posix_header_ustar *)start;
-       if( !strcmp( ptr->name,dirname)){
-            printf("\nEureka"); 
+       if( !strcmp( ptr->name,&dirname[1])){
+            if (DEBUG) printf("\nEureka"); 
             start = start + sizeof(struct posix_header_ustar );
             size = 0; int i = 0;
             while( ptr->size[i] != '\0'){
@@ -346,17 +382,18 @@ void sys_opendir( struct regsForSyscall *regs){
       //descriptors
       //get the file size
 
-      for( int i = 1 ; i <= 99; i++ ){
+      for( int i = 3 ; i <= 99; i++ ){
              if( !dirDesc[ i ] ){
                   dirDesc[i] = 1;
                   dir->fd = dirIntArr[i].fd = i;
-                  dir->startPos = dirIntArr[i].startPos = start;
-                  dir->curPos = dirIntArr[i].curPos = start;        
+                  dir->startPos = dirIntArr[i].startPos = (uint64_t)start;
+                  dir->curPos = dirIntArr[i].curPos = (uint64_t)start;        
                   dir->eofDirectory = dirIntArr[i].eofDirectory = 0;
                   dir->prevFile[0] = dirIntArr[i].prevFile[0] = '\0';
                   strcpy(  dirIntArr[i].dirPath, dirname );
                   strcpy(  dir->dirPath , dirname); 
-                  printf("\n Ding Dong");  
+                  current_task->open_directories[i] = 1; 
+                   if (DEBUG) printf("\n Ding Dong");  
                   //*dir =  &dirIntArr[i];
                   //printf("Hello ptr %p",*dir); 
                   *x = i; 
@@ -372,12 +409,18 @@ void sys_readdir( struct regsForSyscall *regs ){
   
     DIR* dir = (DIR *)regs->rax;     
     char* buff = (char *)regs->rcx;
-    if( dirDesc[dir->fd] == 0 )
+    if( !current_task->open_directories[dir->fd]  )
     {
+         printf("\nInvalid directory descriptor for out process"); 
          *buff = '\0';
          return;
-    }
-    //printf("\nJust before get FIle name"); 
+    }  
+    if( dirIntArr[dir->fd].eofDirectory )
+    {      
+           *buff = '\0'; 
+           return;  
+   }
+   //printf("\nJust before get FIle name"); 
     getFileName( dir, buff); 
 }
 
@@ -385,10 +428,29 @@ void sys_closedir( struct regsForSyscall *regs )
 {
      int fd = (int)regs->rax; 
      int *retval = (int *)regs->rcx; 
+     current_task->open_directories[fd]; 
      dirDesc[ fd ] = 0;
      *retval = 1;
 }
 
+void sys_write(struct regsForSyscall *regs ){
+     int fd = (int)regs->rcx; 
+     char *buff = (char *)regs->rdx; 
+     printf("\nCurrent taks open fd %d ",current_task->open_files[fd]); 
+     if( !current_task->open_files[fd] )
+     {
+         printf("\n The descriptor %d is closed for the process. Cannot Write to it", fd);  
+         return;
+     }else{
+         while( *buff != '\0' )
+         {
+              putc( *buff );
+              buff++;
+         }
+     } 
+}
+
+ 
 void sys_ls( struct regsForSyscall *regs )
 {
 
@@ -400,21 +462,28 @@ void sys_ls( struct regsForSyscall *regs )
     uint64_t start = (uint64_t)&_binary_tarfs_start;
     uint64_t end = (uint64_t)&_binary_tarfs_end;
     char prevFile[100]= {0};
-
     prevFile[0] = '.';
     //printf("\n%s",prevFile); 
+    if( !strcmp(dirname,"/"))
+    {
+        handleRootLS(); 
+        if (DEBUG) printf("\nHello World");
+        return;
+    } 
+
     char buff[ 100 ] = {0};
     struct posix_header_ustar *ptr;
     int   size;
     ptr = (struct posix_header_ustar *)start;
+    //printf(" 
     while( start < end  ){
        ptr = (struct posix_header_ustar *)start;
-       if( contains(  ptr->name, dirname )){
+       if( contains(  ptr->name, &dirname[1] )){
             //printf("\nEureka %s", ptr->name);
             //printf("\nStrlen %d", strlen(dirname)); 
-            fetchName(ptr->name,strlen(dirname),buff) ;
+            fetchName(ptr->name,strlen(&dirname[1]),buff) ;
             //printf("\nKattu %s",buff); 
-            //printf("\nBuff [%s]  preFile [%s] \n curName [%s]\n",buff, prevFile, ptr->name );
+            //printf("\nBuff %s \n preFile %s \n curName",buff, prevFile, ptr->name );
             //while(1);  
             if( strcmp(buff, prevFile) ){
                  printf("\n%s",buff); 
@@ -452,6 +521,38 @@ void sys_ls( struct regsForSyscall *regs )
        start = start + sizeof(struct posix_header_ustar ) + size + offset;
 
     }
+
+    //printf("\nHello World");
+
+    //while(1);
+}
+
+void handleRootLS(){
+     uint64_t start = (uint64_t)&_binary_tarfs_start;
+     uint64_t end = (uint64_t)&_binary_tarfs_end;
+     struct posix_header_ustar *ptr; 
+     char prevFile[100] = {0};
+     char buff[100] = {0}; 
+     while( start < end-512  ){
+          ptr = (struct posix_header_ustar *)start;
+          fetchName(ptr->name,0,buff) ;
+          if( strcmp(buff, prevFile) ){
+                 printf("\n%s",buff);
+                 strcpy(prevFile, buff);
+          }
+            //while(1);
+          int size = 0,offset =0; int i = 0;
+          while( ptr->size[i] != '\0'){
+              size = size*10 + ( ptr->size[i] - '0');
+              i++ ;
+          }
+          size = octal_decimal( size );
+          if( size % 512 != 0 )
+          {
+              offset =   512 - size % 512;
+          }
+          start = start + sizeof(struct posix_header_ustar ) + size + offset; 
+     }
 }
 
 static void *syscalls[NUM_SYSCALLS] =
@@ -475,9 +576,9 @@ static void *syscalls[NUM_SYSCALLS] =
      sys_ulimit,
      sys_kmalloc,
      sys_ls,
-     sys_ls,
-     sys_ls,
-     sys_ls,
+     sys_write,
+     sys_noop,
+     sys_noop,
      sys_ps,
      sys_cd,
      sys_pwd,
@@ -486,19 +587,11 @@ static void *syscalls[NUM_SYSCALLS] =
 
 void syscall_handler( struct regsForSyscall * s)
 {
-       //if (DEBUG) printf("SysCall handler begins\n");
-       //if (DEBUG) printf("\nSyscall no %x",s->rbx);
        if( s->rbx > NUM_SYSCALLS ) {
          printf("ERR: Invalid syscall %d\n", s->rbx);
          return;
        }
-       //if (DEBUG) printf("Inside Syscall handler\n");
        void (*location)(struct regsForSyscall*) =
            (void (*)(struct regsForSyscall*))syscalls[ s->rbx ];
-       //if (DEBUG) printf("\nInside fault handler Alok\n");
-       //if (DEBUG) printf("\nrax : %p",s->rax);
-       //if (DEBUG) printf("\nrbx %p",s->rbx);
-       //if (DEBUG) printf("\nrcx : %x",s->rcx);
-       //if (DEBUG) printf("\nrdx %p",s->rdx); 
        location(s);
 }

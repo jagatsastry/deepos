@@ -123,8 +123,11 @@ void initialize_tasking()
    current_task->STATUS = TASK_READY;
    //current_task->program_name = kmalloc(64);
    strcpy((char*)current_task->program_name, (char*)"init");
-   for (i = 0; i < 10; i++)
+   for (i = 0; i < 10; i++) {
      current_task->vma[i].start_addr = NULL;
+     for (int j = 0; j < 3; j++)
+       current_task->open_files[j] = 1;
+   }
    //uint64_t virt_u_rsp = (uint64_t)i_virt_alloc();
    current_task->vma[VMA_USER_STACK_IDX].start_addr = (uint64_t)stack;
    current_task->vma[VMA_KERNEL_STACK_IDX].start_addr = (uint64_t)i_virt_alloc();

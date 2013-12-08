@@ -116,6 +116,12 @@ int atoi(char *p) {
 
 
 char*  getAbsoluteFilePath(char *dir, char *fname) {
+  if (startsWith(fname, "/")) { 
+    if (endsWith(fname, "/"))
+      return fname;
+    else return strcat(fname, "/");
+  }
+    
   if (!endsWith(dir, "/"))
     dir = strcat(dir, "/");
   return strcat(dir, fname);
