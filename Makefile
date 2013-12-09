@@ -66,15 +66,6 @@ obj/%.asm.o: %.s
 
 .PHONY: submit clean
 
-SUBMITTO:=~mferdman/cse506-submit/
-
-submit: clean
-	tar -czvf $(USER).tgz --exclude=.empty --exclude=.*.sw? --exclude=*~ LICENSE README Makefile linker.script sys bin crt libc newfs ld include $(ROOTFS) $(USER).img
-	@gpg --quiet --import cse506-pubkey.txt
-	gpg --yes --encrypt --recipient 'CSE506' $(USER).tgz
-	rm -fv $(SUBMITTO)$(USER)=*.tgz.gpg
-	cp -v $(USER).tgz.gpg $(SUBMITTO)$(USER)=`date +%F=%T`.tgz.gpg
-
 clean:
 	find $(ROOTLIB) $(ROOTBIN) -type f ! -name .empty -print -delete
 	rm -rfv obj kernel newfs.506 $(ROOTBOOT)/kernel/kernel
