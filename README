@@ -61,19 +61,22 @@ This is a hobby/coursework OS and should be used only for learning purposes.
 
 The following resources were used in building this OS. Some code snippets were adapted from the following tutorials and existing hobby OSes
 
+Online Tutorials
+-----------------
 James Molloy OS dev tutorial - http://jamesmolloy.co.uk/tutorial_html/index.html
 Brans's Kernel dev tutorial - http://www.osdever.net/bkerndev/Docs/title.htm
 Ian Jack's kernel dev tutorial - http://www.ijack.org.uk/
 Broken Thorn kernel dev tutorial - http://www.brokenthorn.com/Resources/OSDevIndex.html
 OS Development wiki - http://wiki.osdev.org/Expanded_Main_Page
 
+Other OSes
+-----------------
 Geek OS - http://geekos.sourceforge.net/ (tarfs)
 Shovel OS - https://code.google.com/p/shovelos/ (interrupts)
 Minix 3 - https://github.com/minix3/minix
 
-==================
 Books
-==================
+-------------------
 Understanding the Linux Kernel, Bovet et al
 Linux Kernel Development, Robert Love
 Design and Implementation of Operating Systems, Tanenbaum
