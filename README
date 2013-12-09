@@ -55,11 +55,13 @@ To connect a remote debugger to the running qemu VM:
 ====================
 License/Attributions
 ====================
-Released under Apache License v2, terms of which are specified in
-http://www.apache.org/licenses/LICENSE-2.0.html
+Released under BSD License.
+
 This is a hobby/coursework OS and should be used only for learning purposes.
 
 The following resources were used in building this OS. Some code snippets were adapted from the following tutorials and existing hobby OSes
+
+Bootloader is from the existing FreeBSD source code
 
 Online Tutorials
 -----------------
